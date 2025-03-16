@@ -6,12 +6,11 @@
   --gradient-start: #ffd89b;
   --gradient-middle: #f9a86f;
   --gradient-end: #e8a0a0;
-}
-
-@theme inline {
+  
+  /* Replace @theme with standard CSS variables */
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
