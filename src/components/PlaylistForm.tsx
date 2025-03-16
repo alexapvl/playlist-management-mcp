@@ -201,7 +201,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                     <button
                       type="button"
                       onClick={() => handleRemoveSong(song.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 hover:border hover:border-red-700 px-2 py-1 rounded transition-all duration-300 transform hover:scale-105"
                     >
                       Remove
                     </button>
@@ -292,7 +292,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                   (newSong.durationSeconds !== "" &&
                     parseInt(String(newSong.durationSeconds)) < 0)
                 }
-                className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                className="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
               >
                 Add Song
               </button>
