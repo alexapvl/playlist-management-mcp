@@ -49,25 +49,30 @@ function PlaylistGrid() {
 
           <button
             onClick={handleAddPlaylist}
-            className="h-64 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center p-6 transition-colors hover:border-blue-500 dark:hover:border-blue-400"
+            className="add-playlist-button h-full flex flex-col rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg"
           >
-            <svg
-              className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              ></path>
-            </svg>
-            <span className="text-gray-600 dark:text-gray-400 font-medium">
-              Add New Playlist
-            </span>
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center text-center">
+                <svg
+                  className="w-16 h-16"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  ></path>
+                </svg>
+                <h3 className="text-xl font-semibold mb-2">Add New Playlist</h3>
+                <p className="text-sm text-white text-opacity-80 mb-3">
+                  Create a custom playlist with your favorite songs
+                </p>
+              </div>
+            </div>
           </button>
         </div>
       ) : (
@@ -82,7 +87,7 @@ function PlaylistGrid() {
           </p>
           <button
             onClick={handleAddPlaylist}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            className="add-playlist-button px-6 py-3 rounded-md text-white font-medium"
           >
             Create Playlist
           </button>
