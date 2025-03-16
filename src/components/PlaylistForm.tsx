@@ -259,7 +259,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                       })
                     }
                     min="0"
-                    placeholder="Min"
+                    placeholder="Min (optional)"
                     className="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                   />
                   <span className="text-gray-700 dark:text-gray-300">:</span>
@@ -276,7 +276,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                     }}
                     min="0"
                     max="59"
-                    placeholder="Sec"
+                    placeholder="Sec (optional)"
                     className="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                   />
                 </div>
