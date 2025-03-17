@@ -21,37 +21,60 @@ interface PlaylistContextType {
   ) => void;
   updatePlaylist: (id: string, playlist: Partial<Playlist>) => void;
   deletePlaylist: (id: string) => void;
+  sortType: "none" | "alphabetical" | "numberOfSongs";
+  setSortType: (type: "none" | "alphabetical" | "numberOfSongs") => void;
 }
 
 const PlaylistContext = createContext<PlaylistContextType | undefined>(
   undefined
 );
 
-export function PlaylistProvider({ children }: { children: ReactNode }) {
+export function PlaylistProvider({
+  children,
+  initialPlaylists = [],
+}: {
+  children: ReactNode;
+  initialPlaylists?: Playlist[];
+}) {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Playlist[]>([]);
+  const [sortType, setSortType] = useState<
+    "none" | "alphabetical" | "numberOfSongs"
+  >("none");
 
-  // Initialize with mock data
+  // Initialize with provided playlists or mock data
   useEffect(() => {
-    setPlaylists(mockPlaylists);
-  }, []);
+    setPlaylists(
+      initialPlaylists.length > 0 ? initialPlaylists : mockPlaylists
+    );
+  }, [initialPlaylists]);
 
-  // Update search results when query or playlists change
+  // Update search results when query, playlists, or sort type change
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults(playlists);
-      return;
+    let filtered = playlists;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (playlist) =>
+          playlist.name.toLowerCase().includes(query) ||
+          playlist.description.toLowerCase().includes(query)
+      );
     }
 
-    const query = searchQuery.toLowerCase();
-    const filtered = playlists.filter(
-      (playlist) =>
-        playlist.name.toLowerCase().includes(query) ||
-        playlist.description.toLowerCase().includes(query)
-    );
+    // Apply sorting
+    if (sortType === "alphabetical") {
+      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    if (sortType === "numberOfSongs") {
+      filtered = [...filtered].sort((a, b) => b.songs.length - a.songs.length);
+    }
+
     setSearchResults(filtered);
-  }, [searchQuery, playlists]);
+  }, [searchQuery, playlists, sortType]);
 
   const addPlaylist = (
     playlistData: Omit<Playlist, "id" | "createdAt" | "updatedAt">
@@ -89,6 +112,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
         addPlaylist,
         updatePlaylist,
         deletePlaylist,
+        sortType,
+        setSortType,
       }}
     >
       {children}

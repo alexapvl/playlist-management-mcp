@@ -6,6 +6,7 @@ import { PlaylistProvider, usePlaylist } from "../context/PlaylistContext";
 import PlaylistCard from "../components/PlaylistCard";
 import SearchBar from "../components/SearchBar";
 import PlaylistForm from "../components/PlaylistForm";
+import SortDropdown from "../components/SortDropdown";
 
 function PlaylistGrid() {
   const { searchResults } = usePlaylist();
@@ -35,7 +36,14 @@ function PlaylistGrid() {
         My Playlists
       </h1>
 
-      <SearchBar />
+      <div className="flex items-center gap-4 mb-8">
+        <div className="flex-grow">
+          <SearchBar />
+        </div>
+        <div className="w-48">
+          <SortDropdown />
+        </div>
+      </div>
 
       {searchResults.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

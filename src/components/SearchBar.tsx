@@ -6,7 +6,7 @@ export default function SearchBar() {
   const { searchQuery, setSearchQuery } = usePlaylist();
 
   return (
-    <div className="w-full max-w-2xl mx-auto mb-8">
+    <div className="w-full max-w-2xl mx-auto">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <svg
@@ -36,7 +36,7 @@ export default function SearchBar() {
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute right-2.5 bottom-2.5 focus:outline-none text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            className="absolute right-2.5 inset-y-0 my-auto flex items-center focus:outline-none text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
           >
             <svg
               className="w-4 h-4"
