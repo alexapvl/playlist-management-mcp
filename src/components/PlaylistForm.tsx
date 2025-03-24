@@ -25,6 +25,14 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Lock body scroll when form is mounted
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   // If editing an existing playlist, populate the form
   useEffect(() => {
     if (playlist) {
@@ -184,30 +192,32 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
             </h3>
 
             {songs.length > 0 ? (
-              <ul className="mb-4 divide-y divide-gray-200 dark:divide-gray-700">
-                {songs.map((song) => (
-                  <li
-                    key={song.id}
-                    className="py-2 flex justify-between items-center"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-800 dark:text-white">
-                        {song.title}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {song.artist} {song.album && `• ${song.album}`}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSong(song.id)}
-                      className="text-red-500 hover:text-red-700 hover:border hover:border-red-700 px-2 py-1 rounded transition-all duration-300 transform hover:scale-105"
+              <div className="max-h-48 overflow-y-auto pr-2 custom-scrollbar mb-4">
+                <div className="space-y-2">
+                  {songs.map((song) => (
+                    <div
+                      key={song.id}
+                      className="bg-gray-50 dark:bg-gray-700 p-2 rounded-md flex justify-between items-center"
                     >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <div>
+                        <p className="font-medium text-gray-800 dark:text-white">
+                          {song.title}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {song.artist} {song.album && `• ${song.album}`}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSong(song.id)}
+                        className="text-red-500 hover:text-red-700 hover:border hover:border-red-700 px-2 py-1 rounded transition-all duration-300 transform hover:scale-105"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 No songs added yet.
