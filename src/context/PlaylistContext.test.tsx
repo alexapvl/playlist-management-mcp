@@ -175,7 +175,7 @@ describe("PlaylistContext CRUD Operations", () => {
 
     const sortedPlaylists =
       handleStateChange.mock.calls[handleStateChange.mock.calls.length - 1][0];
-    expect(sortedPlaylists[1].name).toBe("Another Playlist");
     expect(sortedPlaylists[0].name).toBe("Test Playlist");
+    expect(sortedPlaylists[1].name).toBe("Another Playlist");
   });
 });

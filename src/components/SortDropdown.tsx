@@ -7,7 +7,9 @@ export default function SortDropdown() {
   const { sortType, setSortType } = usePlaylist();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSort = (type: "none" | "alphabetical" | "numberOfSongs") => {
+  const handleSort = (
+    type: "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc"
+  ) => {
     setSortType(type);
     setIsOpen(false);
   };
@@ -18,14 +20,16 @@ export default function SortDropdown() {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex w-full justify-center gap-x-1.5 rounded-lg p-4 text-sm text-gray-900 border border-gray-300 bg-white focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          className="inline-flex w-full justify-center gap-x-1.5 rounded-lg p-4 text-sm text-gray-900 border border-gray-300 bg-white focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 min-w-[200px]"
         >
           Sort by:{" "}
           {sortType === "none"
             ? "None"
             : sortType === "alphabetical"
             ? "A-Z"
-            : "No. Songs"}
+            : sortType === "numberOfSongsDesc"
+            ? "Songs desc."
+            : "Songs asc."}
           <svg
             className="-mr-1 h-5 w-5 text-gray-400"
             viewBox="0 0 20 20"
@@ -42,7 +46,7 @@ export default function SortDropdown() {
       </div>
 
       {isOpen && (
-        <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <div className="absolute right-0 z-10 mt-2 w-72 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div className="py-1">
             <button
               onClick={() => handleSort("none")}
@@ -65,14 +69,24 @@ export default function SortDropdown() {
               Alphabetical (A-Z)
             </button>
             <button
-              onClick={() => handleSort("numberOfSongs")}
+              onClick={() => handleSort("numberOfSongsDesc")}
               className={`${
-                sortType === "numberOfSongs"
+                sortType === "numberOfSongsDesc"
                   ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
                   : "text-gray-700 dark:text-gray-300"
               } block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700`}
             >
-              Number of Songs
+              Number of Songs desc.
+            </button>
+            <button
+              onClick={() => handleSort("numberOfSongsAsc")}
+              className={`${
+                sortType === "numberOfSongsAsc"
+                  ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                  : "text-gray-700 dark:text-gray-300"
+              } block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700`}
+            >
+              Number of Songs asc.
             </button>
           </div>
         </div>

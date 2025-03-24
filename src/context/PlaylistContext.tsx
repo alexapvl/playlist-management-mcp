@@ -21,8 +21,10 @@ interface PlaylistContextType {
   ) => void;
   updatePlaylist: (id: string, playlist: Partial<Playlist>) => void;
   deletePlaylist: (id: string) => void;
-  sortType: "none" | "alphabetical" | "numberOfSongs";
-  setSortType: (type: "none" | "alphabetical" | "numberOfSongs") => void;
+  sortType: "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc";
+  setSortType: (
+    type: "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc"
+  ) => void;
 }
 
 const PlaylistContext = createContext<PlaylistContextType | undefined>(
@@ -40,7 +42,7 @@ export function PlaylistProvider({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Playlist[]>([]);
   const [sortType, setSortType] = useState<
-    "none" | "alphabetical" | "numberOfSongs"
+    "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc"
   >("none");
 
   // Initialize with provided playlists or mock data
@@ -69,8 +71,12 @@ export function PlaylistProvider({
       filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    if (sortType === "numberOfSongs") {
+    if (sortType === "numberOfSongsDesc") {
       filtered = [...filtered].sort((a, b) => b.songs.length - a.songs.length);
+    }
+
+    if (sortType === "numberOfSongsAsc") {
+      filtered = [...filtered].sort((a, b) => a.songs.length - b.songs.length);
     }
 
     setSearchResults(filtered);
