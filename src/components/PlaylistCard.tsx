@@ -32,6 +32,16 @@ export default function PlaylistCard({ playlist, onEdit }: PlaylistCardProps) {
     });
   };
 
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg h-full flex flex-col">
       <div className="relative h-48 w-full">
@@ -56,6 +66,7 @@ export default function PlaylistCard({ playlist, onEdit }: PlaylistCardProps) {
           <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
             {playlist.name}
           </h3>
+
           <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
             {playlist.description}
           </p>
@@ -76,13 +87,41 @@ export default function PlaylistCard({ playlist, onEdit }: PlaylistCardProps) {
               )}
             </div>
           </div>
+
+          {/* Stats Section */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="bg-blue-100 dark:bg-blue-800/30 p-2 rounded-lg">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Duration
+              </p>
+              <p className="text-sm font-semibold">
+                {formatDuration(
+                  playlist.songs.reduce(
+                    (total, song) => total + song.duration,
+                    0
+                  )
+                )}
+              </p>
+            </div>
+            <div className="bg-purple-100 dark:bg-purple-800/30 p-2 rounded-lg">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Unique Artists
+              </p>
+              <p className="text-sm font-semibold">
+                {new Set(playlist.songs.map((song) => song.artist)).size}
+              </p>
+            </div>
+            <div className="bg-green-100 dark:bg-green-800/30 p-2 rounded-lg">
+              <p className="text-xs text-gray-600 dark:text-gray-400">Songs</p>
+              <p className="text-sm font-semibold">{playlist.songs.length}</p>
+            </div>
+          </div>
         </div>
 
         {/* Footer section - always at bottom */}
         <div className="mt-auto">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            <p>{playlist.songs.length} songs</p>
-            <p>Updated: {formatDate(playlist.updatedAt)}</p>
+            <p>Last Updated: {formatDate(playlist.updatedAt)}</p>
           </div>
 
           <div className="flex justify-between">
