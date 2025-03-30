@@ -6,7 +6,6 @@ export const generateMockPlaylist = (): Playlist => {
     id: faker.string.uuid(),
     name: faker.music.songName(),
     description: faker.lorem.sentence(),
-    coverImage: faker.image.urlLoremFlickr({ category: "music" }),
     songs: Array.from(
       { length: faker.number.int({ min: 3, max: 15 }) },
       () => ({

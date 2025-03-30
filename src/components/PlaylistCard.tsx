@@ -55,7 +55,7 @@ export default function PlaylistCard({ playlist, onEdit }: PlaylistCardProps) {
         ) : (
           <div className="h-full w-full bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center justify-center">
             <span className="text-white text-2xl font-bold">
-              {playlist.name.charAt(0)}
+              {playlist.name}
             </span>
           </div>
         )}

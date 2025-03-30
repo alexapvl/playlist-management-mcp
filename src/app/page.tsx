@@ -8,9 +8,10 @@ import SearchBar from "../components/SearchBar";
 import PlaylistForm from "../components/PlaylistForm";
 import SortDropdown from "../components/SortDropdown";
 import PlaylistDashboard from "../components/PlaylistDashboard";
+import { generateMockPlaylists } from "../utils/mockData";
 
 function PlaylistGrid() {
-  const { searchResults, playlists } = usePlaylist();
+  const { searchResults, playlists, addPlaylist } = usePlaylist();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState<Playlist | undefined>(
     undefined
@@ -19,6 +20,7 @@ function PlaylistGrid() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
   const [paginatedPlaylists, setPaginatedPlaylists] = useState<Playlist[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Reset to first page when playlists or search results change
   useEffect(() => {
@@ -69,6 +71,29 @@ function PlaylistGrid() {
     setCurrentPage(1); // Reset to first page when changing items per page
   };
 
+  const handleGeneratePlaylists = async () => {
+    setIsGenerating(true);
+    try {
+      // Generate 5 random playlists
+      const newPlaylists = generateMockPlaylists(5);
+
+      // Add each playlist to the list with a 1 second delay between each
+      for (const playlist of newPlaylists) {
+        addPlaylist({
+          name: playlist.name,
+          description: playlist.description,
+          coverImage: playlist.coverImage,
+          songs: playlist.songs,
+        });
+
+        // Wait 1 second before adding the next playlist
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
@@ -82,6 +107,13 @@ function PlaylistGrid() {
         <div className="w-48">
           <SortDropdown />
         </div>
+        <button
+          onClick={handleGeneratePlaylists}
+          disabled={isGenerating}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400 transition-colors"
+        >
+          {isGenerating ? "Generating..." : "Add 5 Random Playlists"}
+        </button>
       </div>
 
       {searchResults.length > 0 ? (
@@ -176,6 +208,13 @@ function PlaylistGrid() {
             className="add-playlist-button px-6 py-3 rounded-md text-white font-medium"
           >
             Create Playlist
+          </button>
+          <button
+            onClick={handleGeneratePlaylists}
+            disabled={isGenerating}
+            className="add-playlist-button px-6 py-3 rounded-md text-white font-medium ml-4"
+          >
+            {isGenerating ? "Generating..." : "Add 5 Random Playlists"}
           </button>
         </div>
       )}
