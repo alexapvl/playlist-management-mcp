@@ -21,7 +21,7 @@ export default function PlaylistCard({ playlist, onEdit }: PlaylistCardProps) {
     setTimeout(() => {
       deletePlaylist(playlist.id);
       setIsDeleting(false);
-    }, 500);
+    }, 250);
   };
 
   const formatDate = (date: Date) => {

@@ -21,6 +21,7 @@ interface PlaylistContextType {
   ) => void;
   updatePlaylist: (id: string, playlist: Partial<Playlist>) => void;
   deletePlaylist: (id: string) => void;
+  resetPlaylists: () => void;
   sortType: "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc";
   setSortType: (
     type: "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc"
@@ -50,7 +51,7 @@ export function PlaylistProvider({
     setPlaylists(
       initialPlaylists.length > 0 ? initialPlaylists : mockPlaylists
     );
-  }, [initialPlaylists]);
+  }, []);
 
   // Update search results when query, playlists, or sort type change
   useEffect(() => {
@@ -106,6 +107,11 @@ export function PlaylistProvider({
 
   const deletePlaylist = (id: string) => {
     setPlaylists((prev) => prev.filter((playlist) => playlist.id !== id));
+    console.log("Playlist deleted:", id);
+  };
+
+  const resetPlaylists = () => {
+    setPlaylists(mockPlaylists);
   };
 
   return (
@@ -118,6 +124,7 @@ export function PlaylistProvider({
         addPlaylist,
         updatePlaylist,
         deletePlaylist,
+        resetPlaylists,
         sortType,
         setSortType,
       }}
