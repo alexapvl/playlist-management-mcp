@@ -11,7 +11,8 @@ import PlaylistDashboard from "../components/PlaylistDashboard";
 import { generateMockPlaylists } from "../utils/mockData";
 
 function PlaylistGrid() {
-  const { searchResults, playlists, addPlaylist } = usePlaylist();
+  const { searchResults, playlists, addPlaylist, isLoading, error } =
+    usePlaylist();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState<Playlist | undefined>(
     undefined
@@ -77,18 +78,20 @@ function PlaylistGrid() {
       // Generate 5 random playlists
       const newPlaylists = generateMockPlaylists(5);
 
-      // Add each playlist to the list with a 1 second delay between each
+      // Add each playlist to the list with a short delay between each
       for (const playlist of newPlaylists) {
-        addPlaylist({
+        await addPlaylist({
           name: playlist.name,
           description: playlist.description,
           coverImage: playlist.coverImage,
           songs: playlist.songs,
         });
 
-        // Wait 1 second before adding the next playlist
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Wait a short time before adding the next playlist
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
+    } catch (err) {
+      console.error("Error generating playlists:", err);
     } finally {
       setIsGenerating(false);
     }
@@ -100,6 +103,13 @@ function PlaylistGrid() {
         My Playlists
       </h1>
 
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          <p className="font-medium">Error:</p>
+          <p>{error}</p>
+        </div>
+      )}
+
       <div className="flex items-center gap-4 mb-8">
         <div className="flex-grow">
           <SearchBar />
@@ -109,14 +119,30 @@ function PlaylistGrid() {
         </div>
         <button
           onClick={handleGeneratePlaylists}
-          disabled={isGenerating}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400 transition-colors"
+          disabled={isGenerating || isLoading}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400 transition-colors flex items-center"
         >
-          {isGenerating ? "Generating..." : "Add 5 Random Playlists"}
+          {isGenerating ? (
+            <>
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+              <span>Generating...</span>
+            </>
+          ) : (
+            "Add 5 Random Playlists"
+          )}
         </button>
       </div>
 
-      {searchResults.length > 0 ? (
+      {isLoading && !isGenerating && (
+        <div className="flex justify-center items-center py-12">
+          <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-3 text-lg text-gray-700 dark:text-gray-300">
+            Loading playlists...
+          </span>
+        </div>
+      )}
+
+      {!isLoading && searchResults.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedPlaylists.map((playlist: Playlist) => (
@@ -129,7 +155,8 @@ function PlaylistGrid() {
 
             <button
               onClick={handleAddPlaylist}
-              className="add-playlist-button h-full flex flex-col rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg"
+              disabled={isLoading}
+              className="add-playlist-button h-full flex flex-col rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg disabled:opacity-50"
             >
               <div className="h-full w-full flex items-center justify-center">
                 <div className="flex flex-col items-center justify-center text-center">
@@ -164,9 +191,9 @@ function PlaylistGrid() {
               value={itemsPerPage}
               onChange={handleItemsPerPageChange}
               className="border rounded p-2"
+              disabled={isLoading}
             >
-              <option value={5}>5 per page</option>{" "}
-              {/* 6 to include the add button, same for the rest*/}
+              <option value={5}>5 per page</option>
               <option value={10}>10 per page</option>
               <option value={20}>20 per page</option>
               <option value={50}>50 per page</option>
@@ -175,7 +202,7 @@ function PlaylistGrid() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePreviousPage}
-                disabled={currentPage === 1}
+                disabled={currentPage === 1 || isLoading}
                 className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
               >
                 Previous
@@ -185,7 +212,7 @@ function PlaylistGrid() {
               </span>
               <button
                 onClick={handleNextPage}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || isLoading}
                 className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
               >
                 Next
@@ -193,31 +220,39 @@ function PlaylistGrid() {
             </div>
           </div>
         </>
-      ) : (
+      ) : !isLoading ? (
         <div className="text-center py-12">
           <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
             No playlists found
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            {searchResults.length === 0
+            {searchResults.length === 0 && !error
               ? "Let's create a playlist to your liking!"
               : "No playlists match your search."}
           </p>
           <button
             onClick={handleAddPlaylist}
+            disabled={isLoading}
             className="add-playlist-button px-6 py-3 rounded-md text-white font-medium"
           >
             Create Playlist
           </button>
           <button
             onClick={handleGeneratePlaylists}
-            disabled={isGenerating}
-            className="add-playlist-button px-6 py-3 rounded-md text-white font-medium ml-4"
+            disabled={isGenerating || isLoading}
+            className="add-playlist-button px-6 py-3 rounded-md text-white font-medium ml-4 flex items-center inline-flex"
           >
-            {isGenerating ? "Generating..." : "Add 5 Random Playlists"}
+            {isGenerating ? (
+              <>
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                <span>Generating...</span>
+              </>
+            ) : (
+              "Add 5 Random Playlists"
+            )}
           </button>
         </div>
-      )}
+      ) : null}
 
       {isFormOpen && (
         <PlaylistForm playlist={editingPlaylist} onClose={handleCloseForm} />
@@ -229,10 +264,12 @@ function PlaylistGrid() {
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col">
-      <PlaylistGrid />
-      <div className="mt-auto w-full">
-        <PlaylistDashboard />
-      </div>
+      <PlaylistProvider>
+        <PlaylistGrid />
+        <div className="mt-auto w-full">
+          <PlaylistDashboard />
+        </div>
+      </PlaylistProvider>
     </main>
   );
 }

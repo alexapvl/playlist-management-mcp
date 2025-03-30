@@ -10,7 +10,7 @@ interface PlaylistFormProps {
 }
 
 export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
-  const { addPlaylist, updatePlaylist } = usePlaylist();
+  const { addPlaylist, updatePlaylist, isLoading, error } = usePlaylist();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
@@ -58,7 +58,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -72,15 +72,21 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
       songs,
     };
 
-    if (playlist) {
-      // Update existing playlist
-      updatePlaylist(playlist.id, playlistData);
-    } else {
-      // Add new playlist
-      addPlaylist(playlistData);
-    }
+    try {
+      if (playlist) {
+        // Update existing playlist
+        await updatePlaylist(playlist.id, playlistData);
+      } else {
+        // Add new playlist
+        await addPlaylist(playlistData);
+      }
 
-    onClose();
+      // Close the form only if the operation succeeded
+      onClose();
+    } catch (err) {
+      // Error handling is now managed by the context
+      console.error("Form submission error:", err);
+    }
   };
 
   const handleAddSong = () => {
@@ -120,6 +126,13 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
           {playlist ? "Edit Playlist" : "Create New Playlist"}
         </h2>
 
+        {/* Display API error if present */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            Error: {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
@@ -139,6 +152,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                   : "border-gray-300 dark:border-gray-600"
               } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
               placeholder="My Awesome Playlist"
+              disabled={isLoading}
             />
             {errors.name && (
               <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -163,6 +177,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
               } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
               rows={3}
               placeholder="Describe your playlist..."
+              disabled={isLoading}
             />
             {errors.description && (
               <p className="text-red-500 text-xs mt-1">{errors.description}</p>
@@ -183,6 +198,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
               onChange={(e) => setCoverImage(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="https://example.com/image.jpg"
+              disabled={isLoading}
             />
           </div>
 
@@ -211,6 +227,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                         type="button"
                         onClick={() => handleRemoveSong(song.id)}
                         className="text-red-500 hover:text-red-700 hover:border hover:border-red-700 px-2 py-1 rounded transition-all duration-300 transform hover:scale-105"
+                        disabled={isLoading}
                       >
                         Remove
                       </button>
@@ -237,6 +254,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                   }
                   placeholder="Song title"
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  disabled={isLoading}
                 />
                 <input
                   type="text"
@@ -246,6 +264,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                   }
                   placeholder="Artist"
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  disabled={isLoading}
                 />
               </div>
               <div className="grid grid-cols-2 gap-2 mb-2">
@@ -261,6 +280,7 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                 <div className="flex items-center space-x-1">
                   <input
                     type="number"
+                    min="0"
                     value={newSong.durationMinutes}
                     onChange={(e) =>
                       setNewSong({
@@ -268,41 +288,32 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
                         durationMinutes: e.target.value,
                       })
                     }
-                    min="0"
                     placeholder="Min (optional)"
                     className="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                   />
                   <span className="text-gray-700 dark:text-gray-300">:</span>
                   <input
                     type="number"
-                    value={newSong.durationSeconds}
-                    onChange={(e) => {
-                      const seconds = parseInt(e.target.value) || 0;
-                      const value = seconds > 59 ? "59" : e.target.value;
-                      setNewSong({
-                        ...newSong,
-                        durationSeconds: value,
-                      });
-                    }}
                     min="0"
                     max="59"
+                    value={newSong.durationSeconds}
+                    onChange={(e) =>
+                      setNewSong({
+                        ...newSong,
+                        durationSeconds: e.target.value,
+                      })
+                    }
                     placeholder="Sec (optional)"
                     className="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleAddSong}
-                disabled={
-                  !newSong.title ||
-                  !newSong.artist ||
-                  (newSong.durationMinutes !== "" &&
-                    parseInt(String(newSong.durationMinutes)) < 0) ||
-                  (newSong.durationSeconds !== "" &&
-                    parseInt(String(newSong.durationSeconds)) < 0)
-                }
-                className="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                className="w-full px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={isLoading || !newSong.title || !newSong.artist}
               >
                 Add Song
               </button>
@@ -313,15 +324,20 @@ export default function PlaylistForm({ playlist, onClose }: PlaylistFormProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              disabled={isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300 flex items-center justify-center min-w-[80px]"
+              disabled={isLoading}
             >
-              {playlist ? "Update Playlist" : "Create Playlist"}
+              {isLoading ? (
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+              ) : null}
+              {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

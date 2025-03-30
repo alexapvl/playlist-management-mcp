@@ -12,16 +12,18 @@ interface PlaylistCardProps {
 }
 
 export default function PlaylistCard({ playlist, onEdit }: PlaylistCardProps) {
-  const { deletePlaylist } = usePlaylist();
+  const { deletePlaylist, isLoading } = usePlaylist();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setIsDeleting(true);
-    // Add a small delay to show the deleting state
-    setTimeout(() => {
-      deletePlaylist(playlist.id);
+    try {
+      await deletePlaylist(playlist.id);
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+    } finally {
       setIsDeleting(false);
-    }, 250);
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -128,20 +130,28 @@ export default function PlaylistCard({ playlist, onEdit }: PlaylistCardProps) {
             <button
               onClick={() => onEdit(playlist)}
               className="px-3 py-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors text-sm"
+              disabled={isDeleting || isLoading}
             >
               Edit
             </button>
 
             <button
               onClick={handleDelete}
-              disabled={isDeleting}
-              className={`px-3 py-1.5 rounded-full transition-colors text-sm ${
+              disabled={isDeleting || isLoading}
+              className={`px-3 py-1.5 rounded-full transition-colors text-sm flex items-center justify-center min-w-[80px] ${
                 isDeleting
                   ? "bg-gray-400 text-gray-200"
                   : "bg-red-500 text-white hover:bg-red-600"
               }`}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? (
+                <>
+                  <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></span>
+                  <span>Deleting...</span>
+                </>
+              ) : (
+                "Delete"
+              )}
             </button>
           </div>
         </div>
