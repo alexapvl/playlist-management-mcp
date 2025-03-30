@@ -16,14 +16,14 @@ function PlaylistGrid() {
     undefined
   );
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6); // Plus 1 for the add button
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
   const [paginatedPlaylists, setPaginatedPlaylists] = useState<Playlist[]>([]);
 
   // Reset to first page when playlists or search results change
   useEffect(() => {
     setCurrentPage(1);
-  }, [playlists, searchResults]);
+  }, [searchResults]);
 
   const handleAddPlaylist = () => {
     setEditingPlaylist(undefined);
@@ -43,13 +43,13 @@ function PlaylistGrid() {
   // Pagination
   useEffect(() => {
     setTotalPages(Math.ceil(searchResults.length / itemsPerPage));
-  }, [searchResults, itemsPerPage]);
+  }, [searchResults, itemsPerPage, playlists]);
 
   useEffect(() => {
     setPaginatedPlaylists(
       searchResults.slice(
         (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage - 1
+        currentPage * itemsPerPage
       )
     );
   }, [searchResults, currentPage, itemsPerPage]);
@@ -133,10 +133,11 @@ function PlaylistGrid() {
               onChange={handleItemsPerPageChange}
               className="border rounded p-2"
             >
-              <option value={6}>5 per page</option>
-              <option value={11}>10 per page</option>
-              <option value={21}>20 per page</option>
-              <option value={51}>50 per page</option>
+              <option value={5}>5 per page</option>{" "}
+              {/* 6 to include the add button, same for the rest*/}
+              <option value={10}>10 per page</option>
+              <option value={20}>20 per page</option>
+              <option value={50}>50 per page</option>
             </select>
 
             <div className="flex items-center gap-2">

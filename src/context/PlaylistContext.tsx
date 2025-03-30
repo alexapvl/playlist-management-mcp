@@ -107,7 +107,6 @@ export function PlaylistProvider({
 
   const deletePlaylist = (id: string) => {
     setPlaylists((prev) => prev.filter((playlist) => playlist.id !== id));
-    console.log("Playlist deleted:", id);
   };
 
   const resetPlaylists = () => {
