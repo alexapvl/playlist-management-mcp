@@ -9,10 +9,22 @@ interface RouteParams {
   };
 }
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, PATCH, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  });
+}
+
 // Get a specific song
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id, songId } = params;
+    const resolvedParams = await params;
+    const { id, songId } = resolvedParams;
     const playlist = playlists.find((p) => p.id === id);
 
     if (!playlist) {
@@ -40,7 +52,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // Update a song
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id, songId } = params;
+    const resolvedParams = await params;
+    const { id, songId } = resolvedParams;
     const playlistIndex = playlists.findIndex((p) => p.id === id);
 
     if (playlistIndex === -1) {
@@ -91,7 +104,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 // Delete a song
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id, songId } = params;
+    const resolvedParams = await params;
+    const { id, songId } = resolvedParams;
     const playlistIndex = playlists.findIndex((p) => p.id === id);
 
     if (playlistIndex === -1) {

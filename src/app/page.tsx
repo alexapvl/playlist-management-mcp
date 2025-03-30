@@ -86,9 +86,6 @@ function PlaylistGrid() {
           coverImage: playlist.coverImage,
           songs: playlist.songs,
         });
-
-        // Wait a short time before adding the next playlist
-        await new Promise((resolve) => setTimeout(resolve, 300));
       }
     } catch (err) {
       console.error("Error generating playlists:", err);
@@ -240,7 +237,7 @@ function PlaylistGrid() {
           <button
             onClick={handleGeneratePlaylists}
             disabled={isGenerating || isLoading}
-            className="add-playlist-button px-6 py-3 rounded-md text-white font-medium ml-4 flex items-center inline-flex"
+            className="add-playlist-button px-6 py-3 rounded-md text-white font-medium ml-4 flex items-center"
           >
             {isGenerating ? (
               <>

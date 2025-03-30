@@ -3,12 +3,25 @@ import { Playlist } from "@/types";
 import { playlists } from "@/lib/playlist-store";
 import { playlistUpdateSchema } from "@/lib/validation";
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, PATCH, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  });
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const playlist = playlists.find((p) => p.id === params.id);
+    const resolvedParams = await params;
+    const playlistId = resolvedParams.id;
+    const playlist = playlists.find((p) => p.id === playlistId);
 
     if (!playlist) {
       return NextResponse.json(
@@ -31,7 +44,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const playlistId = params.id;
+    const resolvedParams = await params;
+    const playlistId = resolvedParams.id;
     const playlistIndex = playlists.findIndex((p) => p.id === playlistId);
 
     if (playlistIndex === -1) {
@@ -76,7 +90,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const playlistId = params.id;
+    const resolvedParams = await params;
+    const playlistId = resolvedParams.id;
     const playlistIndex = playlists.findIndex((p) => p.id === playlistId);
 
     if (playlistIndex === -1) {
