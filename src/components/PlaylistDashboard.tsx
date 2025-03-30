@@ -56,17 +56,28 @@ export default function PlaylistDashboard() {
         datasets: [
           {
             label: "Average Duration (minutes)",
-            data: playlists.map(
-              (p) =>
-                p.songs.reduce((acc, song) => acc + song.duration, 0) /
-                60 /
-                p.songs.length
+            data: playlists.map((p) =>
+              p.songs.length === 0
+                ? 0
+                : p.songs.reduce((acc, song) => acc + song.duration, 0) /
+                  60 /
+                  p.songs.length
             ),
             backgroundColor: "rgba(153, 102, 255, 0.2)",
             borderColor: "rgba(153, 102, 255, 1)",
           },
         ],
       };
+
+      // Calculate max average duration for chart scaling
+      const avgDurations = playlists.map((p) =>
+        p.songs.length === 0
+          ? 0
+          : p.songs.reduce((acc, song) => acc + song.duration, 0) /
+            60 /
+            p.songs.length
+      );
+      const maxAvgDuration = Math.max(...avgDurations) + 1;
 
       // Artist distribution
       const artistCounts = playlists
@@ -107,6 +118,7 @@ export default function PlaylistDashboard() {
         songsPerPlaylist,
         avgDurationPerPlaylist,
         artistDistribution,
+        maxAvgDuration,
       });
     };
 
@@ -123,7 +135,7 @@ export default function PlaylistDashboard() {
       {chartData && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8 mx-0">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex items-center justify-center">
-            <div className="w-full max-w-md">
+            <div className="w-full h-full flex items-center justify-center">
               <Bar
                 data={chartData.songsPerPlaylist}
                 options={{
@@ -145,20 +157,22 @@ export default function PlaylistDashboard() {
                     y: {
                       ticks: { color: "white" },
                       grid: { color: "rgba(255, 255, 255, 0.1)" },
+                      min: 0,
                     },
                   },
                 }}
               />
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex items-center justify-center">
-            <div className="w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <div className="w-full h-full flex items-center justify-center">
               <Line
                 data={chartData.avgDurationPerPlaylist}
                 options={{
                   responsive: true,
                   maintainAspectRatio: true,
                   color: "white",
+                  spanGaps: true,
                   plugins: {
                     legend: {
                       labels: {
@@ -174,6 +188,8 @@ export default function PlaylistDashboard() {
                     y: {
                       ticks: { color: "white" },
                       grid: { color: "rgba(255, 255, 255, 0.1)" },
+                      min: 0,
+                      max: chartData.maxAvgDuration,
                     },
                   },
                 }}
@@ -181,7 +197,7 @@ export default function PlaylistDashboard() {
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex items-center justify-center">
-            <div className="w-full max-w-md">
+            <div className="w-full h-full flex items-center justify-center">
               <Doughnut
                 data={chartData.artistDistribution}
                 options={{
