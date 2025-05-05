@@ -5,6 +5,9 @@ import { filterAndSortPlaylists } from "@/lib/playlist-store";
 import { playlistSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
 
+// Add timeout for request handling
+const TIMEOUT_MS = 10000;
+
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
@@ -17,6 +20,10 @@ export async function OPTIONS() {
 }
 
 export async function GET(request: NextRequest) {
+  // Create an AbortController for handling timeouts
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query") || "";
@@ -28,6 +35,27 @@ export async function GET(request: NextRequest) {
 
     // Calculate skip for pagination
     const skip = (page - 1) * pageSize;
+
+    // Building search conditions
+    let whereCondition = {};
+
+    if (query) {
+      // Use fulltext search if query is present
+      whereCondition = {
+        OR: [
+          { name: { contains: query } },
+          { description: { contains: query } },
+        ],
+      };
+
+      // For MySQL 8+ with fulltext support, use this instead:
+      // whereCondition = {
+      //   OR: [
+      //     { name: { search: query } },
+      //     { description: { search: query } },
+      //   ],
+      // };
+    }
 
     // Get total count for pagination info
     const totalCount = await prisma.playlist.count({
@@ -41,29 +69,28 @@ export async function GET(request: NextRequest) {
         : undefined,
     });
 
+    // Build orderBy conditions based on sortType
+    let orderByCondition = {};
+
+    if (sortType === "alphabetical") {
+      orderByCondition = { name: "asc" };
+    } else if (sortType === "numberOfSongsDesc") {
+      orderByCondition = { songCount: "desc" }; // Use the new songCount field
+    } else if (sortType === "numberOfSongsAsc") {
+      orderByCondition = { songCount: "asc" }; // Use the new songCount field
+    } else {
+      orderByCondition = { updatedAt: "desc" }; // Default sort
+    }
+
     // Apply pagination and filtering at the database level
     const prismaPlaylists = await prisma.playlist.findMany({
       skip,
       take: pageSize,
-      where: query
-        ? {
-            OR: [
-              { name: { contains: query } },
-              { description: { contains: query } },
-            ],
-          }
-        : undefined,
+      where: whereCondition,
       include: {
         Song: true, // Include songs with each playlist
       },
-      orderBy:
-        sortType === "alphabetical"
-          ? { name: "asc" }
-          : sortType === "numberOfSongsDesc"
-          ? { Song: { _count: "desc" } }
-          : sortType === "numberOfSongsAsc"
-          ? { Song: { _count: "asc" } }
-          : { updatedAt: "desc" }, // Default sort by most recently updated
+      orderBy: orderByCondition,
     });
 
     // Transform Prisma model to match the expected Playlist interface
@@ -86,6 +113,9 @@ export async function GET(request: NextRequest) {
     // Calculate total pages
     const totalPages = Math.ceil(totalCount / pageSize);
 
+    // Clear the timeout since we're done
+    clearTimeout(timeoutId);
+
     return NextResponse.json({
       playlists,
       pagination: {
@@ -96,6 +126,18 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    // Clear the timeout
+    clearTimeout(timeoutId);
+
+    // Handle aborted requests
+    if (error.name === "AbortError") {
+      return NextResponse.json(
+        { error: "Request timeout exceeded" },
+        { status: 408 }
+      );
+    }
+
+    console.error("Error fetching playlists:", error);
     return NextResponse.json(
       { error: "Failed to fetch playlists" },
       { status: 500 }
@@ -118,6 +160,7 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date();
+    const songCount = body.songs?.length || 0;
 
     // Create new playlist
     const newPlaylist: Playlist = {
@@ -139,6 +182,7 @@ export async function POST(request: NextRequest) {
         coverImage: newPlaylist.coverImage,
         updatedAt: now,
         createdAt: now,
+        songCount, // Store the song count for optimized sorting
       },
     });
 

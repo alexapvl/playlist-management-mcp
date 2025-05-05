@@ -109,10 +109,18 @@ export async function POST(
 
     console.log("Created song in database:", newSong); // Log the created song
 
-    // Update playlist's updatedAt
+    // Get current song count
+    const songCount = await prisma.song.count({
+      where: { playlistId },
+    });
+
+    // Update playlist's updatedAt and songCount
     await prisma.playlist.update({
       where: { id: playlistId },
-      data: { updatedAt: new Date() },
+      data: {
+        updatedAt: new Date(),
+        songCount: songCount, // Update songCount field for better sorting performance
+      },
     });
 
     // Format for response
@@ -131,3 +139,5 @@ export async function POST(
     return NextResponse.json({ error: "Failed to add song" }, { status: 500 });
   }
 }
+
+// Check for file existence

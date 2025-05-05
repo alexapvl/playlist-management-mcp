@@ -126,7 +126,8 @@ exports.Prisma.PlaylistScalarFieldEnum = {
   description: 'description',
   coverImage: 'coverImage',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  songCount: 'songCount'
 };
 
 exports.Prisma.SongScalarFieldEnum = {

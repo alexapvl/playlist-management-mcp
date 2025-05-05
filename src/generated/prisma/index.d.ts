@@ -980,8 +980,18 @@ export namespace Prisma {
 
   export type AggregatePlaylist = {
     _count: PlaylistCountAggregateOutputType | null
+    _avg: PlaylistAvgAggregateOutputType | null
+    _sum: PlaylistSumAggregateOutputType | null
     _min: PlaylistMinAggregateOutputType | null
     _max: PlaylistMaxAggregateOutputType | null
+  }
+
+  export type PlaylistAvgAggregateOutputType = {
+    songCount: number | null
+  }
+
+  export type PlaylistSumAggregateOutputType = {
+    songCount: number | null
   }
 
   export type PlaylistMinAggregateOutputType = {
@@ -991,6 +1001,7 @@ export namespace Prisma {
     coverImage: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    songCount: number | null
   }
 
   export type PlaylistMaxAggregateOutputType = {
@@ -1000,6 +1011,7 @@ export namespace Prisma {
     coverImage: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    songCount: number | null
   }
 
   export type PlaylistCountAggregateOutputType = {
@@ -1009,9 +1021,18 @@ export namespace Prisma {
     coverImage: number
     createdAt: number
     updatedAt: number
+    songCount: number
     _all: number
   }
 
+
+  export type PlaylistAvgAggregateInputType = {
+    songCount?: true
+  }
+
+  export type PlaylistSumAggregateInputType = {
+    songCount?: true
+  }
 
   export type PlaylistMinAggregateInputType = {
     id?: true
@@ -1020,6 +1041,7 @@ export namespace Prisma {
     coverImage?: true
     createdAt?: true
     updatedAt?: true
+    songCount?: true
   }
 
   export type PlaylistMaxAggregateInputType = {
@@ -1029,6 +1051,7 @@ export namespace Prisma {
     coverImage?: true
     createdAt?: true
     updatedAt?: true
+    songCount?: true
   }
 
   export type PlaylistCountAggregateInputType = {
@@ -1038,6 +1061,7 @@ export namespace Prisma {
     coverImage?: true
     createdAt?: true
     updatedAt?: true
+    songCount?: true
     _all?: true
   }
 
@@ -1079,6 +1103,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: PlaylistAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PlaylistSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: PlaylistMinAggregateInputType
@@ -1109,6 +1145,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: PlaylistCountAggregateInputType | true
+    _avg?: PlaylistAvgAggregateInputType
+    _sum?: PlaylistSumAggregateInputType
     _min?: PlaylistMinAggregateInputType
     _max?: PlaylistMaxAggregateInputType
   }
@@ -1120,7 +1158,10 @@ export namespace Prisma {
     coverImage: string | null
     createdAt: Date
     updatedAt: Date
+    songCount: number
     _count: PlaylistCountAggregateOutputType | null
+    _avg: PlaylistAvgAggregateOutputType | null
+    _sum: PlaylistSumAggregateOutputType | null
     _min: PlaylistMinAggregateOutputType | null
     _max: PlaylistMaxAggregateOutputType | null
   }
@@ -1146,6 +1187,7 @@ export namespace Prisma {
     coverImage?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    songCount?: boolean
     Song?: boolean | Playlist$SongArgs<ExtArgs>
     _count?: boolean | PlaylistCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["playlist"]>
@@ -1159,9 +1201,10 @@ export namespace Prisma {
     coverImage?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    songCount?: boolean
   }
 
-  export type PlaylistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "coverImage" | "createdAt" | "updatedAt", ExtArgs["result"]["playlist"]>
+  export type PlaylistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "coverImage" | "createdAt" | "updatedAt" | "songCount", ExtArgs["result"]["playlist"]>
   export type PlaylistInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     Song?: boolean | Playlist$SongArgs<ExtArgs>
     _count?: boolean | PlaylistCountOutputTypeDefaultArgs<ExtArgs>
@@ -1179,6 +1222,7 @@ export namespace Prisma {
       coverImage: string | null
       createdAt: Date
       updatedAt: Date
+      songCount: number
     }, ExtArgs["result"]["playlist"]>
     composites: {}
   }
@@ -1555,6 +1599,7 @@ export namespace Prisma {
     readonly coverImage: FieldRef<"Playlist", 'String'>
     readonly createdAt: FieldRef<"Playlist", 'DateTime'>
     readonly updatedAt: FieldRef<"Playlist", 'DateTime'>
+    readonly songCount: FieldRef<"Playlist", 'Int'>
   }
     
 
@@ -2934,7 +2979,8 @@ export namespace Prisma {
     description: 'description',
     coverImage: 'coverImage',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    songCount: 'songCount'
   };
 
   export type PlaylistScalarFieldEnum = (typeof PlaylistScalarFieldEnum)[keyof typeof PlaylistScalarFieldEnum]
@@ -3035,6 +3081,7 @@ export namespace Prisma {
     coverImage?: StringNullableFilter<"Playlist"> | string | null
     createdAt?: DateTimeFilter<"Playlist"> | Date | string
     updatedAt?: DateTimeFilter<"Playlist"> | Date | string
+    songCount?: IntFilter<"Playlist"> | number
     Song?: SongListRelationFilter
   }
 
@@ -3045,6 +3092,7 @@ export namespace Prisma {
     coverImage?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    songCount?: SortOrder
     Song?: SongOrderByRelationAggregateInput
     _relevance?: PlaylistOrderByRelevanceInput
   }
@@ -3059,6 +3107,7 @@ export namespace Prisma {
     coverImage?: StringNullableFilter<"Playlist"> | string | null
     createdAt?: DateTimeFilter<"Playlist"> | Date | string
     updatedAt?: DateTimeFilter<"Playlist"> | Date | string
+    songCount?: IntFilter<"Playlist"> | number
     Song?: SongListRelationFilter
   }, "id">
 
@@ -3069,9 +3118,12 @@ export namespace Prisma {
     coverImage?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    songCount?: SortOrder
     _count?: PlaylistCountOrderByAggregateInput
+    _avg?: PlaylistAvgOrderByAggregateInput
     _max?: PlaylistMaxOrderByAggregateInput
     _min?: PlaylistMinOrderByAggregateInput
+    _sum?: PlaylistSumOrderByAggregateInput
   }
 
   export type PlaylistScalarWhereWithAggregatesInput = {
@@ -3084,6 +3136,7 @@ export namespace Prisma {
     coverImage?: StringNullableWithAggregatesFilter<"Playlist"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Playlist"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Playlist"> | Date | string
+    songCount?: IntWithAggregatesFilter<"Playlist"> | number
   }
 
   export type SongWhereInput = {
@@ -3156,6 +3209,7 @@ export namespace Prisma {
     coverImage?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    songCount?: number
     Song?: SongCreateNestedManyWithoutPlaylistInput
   }
 
@@ -3166,6 +3220,7 @@ export namespace Prisma {
     coverImage?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    songCount?: number
     Song?: SongUncheckedCreateNestedManyWithoutPlaylistInput
   }
 
@@ -3176,6 +3231,7 @@ export namespace Prisma {
     coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    songCount?: IntFieldUpdateOperationsInput | number
     Song?: SongUpdateManyWithoutPlaylistNestedInput
   }
 
@@ -3186,6 +3242,7 @@ export namespace Prisma {
     coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    songCount?: IntFieldUpdateOperationsInput | number
     Song?: SongUncheckedUpdateManyWithoutPlaylistNestedInput
   }
 
@@ -3196,6 +3253,7 @@ export namespace Prisma {
     coverImage?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    songCount?: number
   }
 
   export type PlaylistUpdateManyMutationInput = {
@@ -3205,6 +3263,7 @@ export namespace Prisma {
     coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    songCount?: IntFieldUpdateOperationsInput | number
   }
 
   export type PlaylistUncheckedUpdateManyInput = {
@@ -3214,6 +3273,7 @@ export namespace Prisma {
     coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    songCount?: IntFieldUpdateOperationsInput | number
   }
 
   export type SongCreateInput = {
@@ -3319,6 +3379,17 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type SongListRelationFilter = {
     every?: SongWhereInput
     some?: SongWhereInput
@@ -3347,6 +3418,11 @@ export namespace Prisma {
     coverImage?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    songCount?: SortOrder
+  }
+
+  export type PlaylistAvgOrderByAggregateInput = {
+    songCount?: SortOrder
   }
 
   export type PlaylistMaxOrderByAggregateInput = {
@@ -3356,6 +3432,7 @@ export namespace Prisma {
     coverImage?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    songCount?: SortOrder
   }
 
   export type PlaylistMinOrderByAggregateInput = {
@@ -3365,6 +3442,11 @@ export namespace Prisma {
     coverImage?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    songCount?: SortOrder
+  }
+
+  export type PlaylistSumOrderByAggregateInput = {
+    songCount?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -3415,6 +3497,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type IntNullableFilter<$PrismaModel = never> = {
@@ -3516,6 +3614,14 @@ export namespace Prisma {
     set?: Date | string
   }
 
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type SongUpdateManyWithoutPlaylistNestedInput = {
     create?: XOR<SongCreateWithoutPlaylistInput, SongUncheckedCreateWithoutPlaylistInput> | SongCreateWithoutPlaylistInput[] | SongUncheckedCreateWithoutPlaylistInput[]
     connectOrCreate?: SongCreateOrConnectWithoutPlaylistInput | SongCreateOrConnectWithoutPlaylistInput[]
@@ -3607,6 +3713,17 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -3623,17 +3740,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -3677,6 +3783,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -3767,6 +3900,7 @@ export namespace Prisma {
     coverImage?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    songCount?: number
   }
 
   export type PlaylistUncheckedCreateWithoutSongInput = {
@@ -3776,6 +3910,7 @@ export namespace Prisma {
     coverImage?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    songCount?: number
   }
 
   export type PlaylistCreateOrConnectWithoutSongInput = {
@@ -3801,6 +3936,7 @@ export namespace Prisma {
     coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    songCount?: IntFieldUpdateOperationsInput | number
   }
 
   export type PlaylistUncheckedUpdateWithoutSongInput = {
@@ -3810,6 +3946,7 @@ export namespace Prisma {
     coverImage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    songCount?: IntFieldUpdateOperationsInput | number
   }
 
   export type SongCreateManyPlaylistInput = {

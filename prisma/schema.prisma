@@ -15,13 +15,17 @@ model Playlist {
   coverImage  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime
+  songCount   Int      @default(0)
   Song        Song[]
 
   // Add indexes for search and sort operations
   @@index([name])
   @@index([description])
   @@index([updatedAt])
+  @@index([songCount])
   @@index([name, updatedAt])
+  // Add full-text search indexes
+  @@fulltext([name, description])
 }
 
 model Song {

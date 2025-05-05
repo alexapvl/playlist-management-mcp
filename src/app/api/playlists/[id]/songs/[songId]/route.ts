@@ -199,10 +199,18 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id: songId },
     });
 
-    // Update playlist's updatedAt time
+    // Get updated song count
+    const songCount = await prisma.song.count({
+      where: { playlistId },
+    });
+
+    // Update playlist's updatedAt time and songCount
     await prisma.playlist.update({
       where: { id: playlistId },
-      data: { updatedAt: new Date() },
+      data: {
+        updatedAt: new Date(),
+        songCount: songCount, // Update songCount for better performance
+      },
     });
 
     return NextResponse.json(
