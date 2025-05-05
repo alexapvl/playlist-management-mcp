@@ -30,6 +30,14 @@ interface PlaylistContextType {
   setSortType: (
     type: "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc"
   ) => void;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+  setCurrentPage: (page: number) => void;
+  setItemsPerPage: (pageSize: number) => void;
 }
 
 const PlaylistContext = createContext<PlaylistContextType | undefined>(
@@ -46,15 +54,45 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     "none" | "alphabetical" | "numberOfSongsDesc" | "numberOfSongsAsc"
   >("none");
 
+  // Add pagination state
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  });
+
   // Fetch playlists on component mount
   useEffect(() => {
     fetchPlaylists();
   }, []);
 
-  // Update search results when query or sort type change
+  // Update search results when query or sort type changes
   useEffect(() => {
+    // Reset to page 1 when search query or sort changes
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
     fetchPlaylists();
   }, [searchQuery, sortType]);
+
+  // Update when pagination changes
+  useEffect(() => {
+    // Only fetch if this isn't the initial render
+    if (pagination.totalItems > 0) {
+      fetchPlaylists();
+    }
+  }, [pagination.currentPage, pagination.itemsPerPage]);
+
+  const setCurrentPage = (page: number) => {
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+  };
+
+  const setItemsPerPage = (pageSize: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      itemsPerPage: pageSize,
+      currentPage: 1,
+    }));
+  };
 
   // Fetch playlists from the API
   const fetchPlaylists = async () => {
@@ -69,6 +107,10 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
         queryParams.append("sort", sortType);
       }
 
+      // Add pagination parameters
+      queryParams.append("page", pagination.currentPage.toString());
+      queryParams.append("pageSize", pagination.itemsPerPage.toString());
+
       const response = await fetch(`/api/playlists?${queryParams.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch playlists");
@@ -76,6 +118,11 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       setPlaylists(data.playlists);
       setSearchResults(data.playlists);
+
+      // Update pagination state with response data
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error fetching playlists:", err);
@@ -299,6 +346,9 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
         error,
         sortType,
         setSortType,
+        pagination,
+        setCurrentPage,
+        setItemsPerPage,
       }}
     >
       {children}

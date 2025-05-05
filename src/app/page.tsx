@@ -11,22 +11,22 @@ import PlaylistDashboard from "../components/PlaylistDashboard";
 import { generateMockPlaylists } from "../utils/mockData";
 
 function PlaylistGrid() {
-  const { searchResults, playlists, addPlaylist, isLoading, error } =
-    usePlaylist();
+  const {
+    searchResults,
+    playlists,
+    addPlaylist,
+    isLoading,
+    error,
+    pagination,
+    setCurrentPage,
+    setItemsPerPage,
+  } = usePlaylist();
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState<Playlist | undefined>(
     undefined
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
-  const [paginatedPlaylists, setPaginatedPlaylists] = useState<Playlist[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // Reset to first page when playlists or search results change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchResults]);
 
   const handleAddPlaylist = () => {
     setEditingPlaylist(undefined);
@@ -43,33 +43,19 @@ function PlaylistGrid() {
     setEditingPlaylist(undefined);
   };
 
-  // Pagination
-  useEffect(() => {
-    setTotalPages(Math.ceil(searchResults.length / itemsPerPage));
-  }, [searchResults, itemsPerPage, playlists]);
-
-  useEffect(() => {
-    setPaginatedPlaylists(
-      searchResults.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-      )
-    );
-  }, [searchResults, currentPage, itemsPerPage]);
-
+  // Pagination handlers updated to use context
   const handlePreviousPage = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
+    setCurrentPage(Math.max(1, pagination.currentPage - 1));
   };
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+    setCurrentPage(Math.min(pagination.totalPages, pagination.currentPage + 1));
   };
 
   const handleItemsPerPageChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
   };
 
   const handleGeneratePlaylists = async () => {
@@ -142,7 +128,7 @@ function PlaylistGrid() {
       {!isLoading && searchResults.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedPlaylists.map((playlist: Playlist) => (
+            {searchResults.map((playlist: Playlist) => (
               <PlaylistCard
                 key={playlist.id}
                 playlist={playlist}
@@ -185,7 +171,7 @@ function PlaylistGrid() {
           {/* Pagination Controls */}
           <div className="flex flex-col items-center gap-4 mt-8">
             <select
-              value={itemsPerPage}
+              value={pagination.itemsPerPage}
               onChange={handleItemsPerPageChange}
               className="border rounded p-2"
               disabled={isLoading}
@@ -199,17 +185,19 @@ function PlaylistGrid() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePreviousPage}
-                disabled={currentPage === 1 || isLoading}
+                disabled={pagination.currentPage === 1 || isLoading}
                 className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
               >
                 Previous
               </button>
               <span className="px-4 py-2">
-                Page {currentPage} of {totalPages}
+                Page {pagination.currentPage} of {pagination.totalPages}
               </span>
               <button
                 onClick={handleNextPage}
-                disabled={currentPage === totalPages || isLoading}
+                disabled={
+                  pagination.currentPage === pagination.totalPages || isLoading
+                }
                 className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
               >
                 Next

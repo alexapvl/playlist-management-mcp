@@ -22,10 +22,48 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get("query") || "";
     const sortType = searchParams.get("sort") || "none";
 
+    // Add pagination parameters
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+
+    // Calculate skip for pagination
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination info
+    const totalCount = await prisma.playlist.count({
+      where: query
+        ? {
+            OR: [
+              { name: { contains: query } },
+              { description: { contains: query } },
+            ],
+          }
+        : undefined,
+    });
+
+    // Apply pagination and filtering at the database level
     const prismaPlaylists = await prisma.playlist.findMany({
+      skip,
+      take: pageSize,
+      where: query
+        ? {
+            OR: [
+              { name: { contains: query } },
+              { description: { contains: query } },
+            ],
+          }
+        : undefined,
       include: {
         Song: true, // Include songs with each playlist
       },
+      orderBy:
+        sortType === "alphabetical"
+          ? { name: "asc" }
+          : sortType === "numberOfSongsDesc"
+          ? { Song: { _count: "desc" } }
+          : sortType === "numberOfSongsAsc"
+          ? { Song: { _count: "asc" } }
+          : { updatedAt: "desc" }, // Default sort by most recently updated
     });
 
     // Transform Prisma model to match the expected Playlist interface
@@ -45,13 +83,18 @@ export async function GET(request: NextRequest) {
       })),
     }));
 
-    const filteredPlaylists = filterAndSortPlaylists(
-      playlists,
-      query,
-      sortType
-    );
+    // Calculate total pages
+    const totalPages = Math.ceil(totalCount / pageSize);
 
-    return NextResponse.json({ playlists: filteredPlaylists });
+    return NextResponse.json({
+      playlists,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: totalCount,
+        itemsPerPage: pageSize,
+      },
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch playlists" },
