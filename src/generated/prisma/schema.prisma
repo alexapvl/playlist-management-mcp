@@ -16,6 +16,12 @@ model Playlist {
   createdAt   DateTime @default(now())
   updatedAt   DateTime
   Song        Song[]
+
+  // Add indexes for search and sort operations
+  @@index([name])
+  @@index([description])
+  @@index([updatedAt])
+  @@index([name, updatedAt])
 }
 
 model Song {
@@ -27,5 +33,9 @@ model Song {
   playlistId String
   Playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
 
+  // The existing index
   @@index([playlistId], map: "Song_playlistId_fkey")
+  // Add indexes for song filtering and sorting
+  @@index([title])
+  @@index([artist])
 }

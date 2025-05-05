@@ -180,17 +180,16 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": null
+        "value": "mysql://root:@localhost:3306/playlist_management"
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Playlist {\n  id          String   @id\n  name        String\n  description String\n  coverImage  String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime\n  Song        Song[]\n}\n\nmodel Song {\n  id         String   @id\n  title      String\n  artist     String\n  album      String?\n  duration   Int?     @default(0)\n  playlistId String\n  Playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)\n\n  @@index([playlistId], map: \"Song_playlistId_fkey\")\n}\n",
-  "inlineSchemaHash": "c6b7f1519d45485b54329e40e4d97e3e8a88712c472ebca027e57917e17df9b8",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Playlist {\n  id          String   @id\n  name        String\n  description String\n  coverImage  String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime\n  Song        Song[]\n\n  // Add indexes for search and sort operations\n  @@index([name])\n  @@index([description])\n  @@index([updatedAt])\n  @@index([name, updatedAt])\n}\n\nmodel Song {\n  id         String   @id\n  title      String\n  artist     String\n  album      String?\n  duration   Int?     @default(0)\n  playlistId String\n  Playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)\n\n  // The existing index\n  @@index([playlistId], map: \"Song_playlistId_fkey\")\n  // Add indexes for song filtering and sorting\n  @@index([title])\n  @@index([artist])\n}\n",
+  "inlineSchemaHash": "21ff62b6ab387522d8c796113c913d2e5d705412da76f1699971dec0b65a966f",
   "copyEngine": true
 }
 
