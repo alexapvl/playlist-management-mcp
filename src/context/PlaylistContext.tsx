@@ -122,6 +122,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
+      console.log("Updating playlist:", id, playlistData);
       const response = await fetch(`/api/playlists/${id}`, {
         method: "PATCH",
         headers: {

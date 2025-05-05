@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Playlist {
+  id          String   @id
+  name        String
+  description String
+  coverImage  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Song        Song[]
+}
+
+model Song {
+  id         String   @id
+  title      String
+  artist     String
+  album      String?
+  duration   Int?     @default(0)
+  playlistId String
+  Playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@index([playlistId], map: "Song_playlistId_fkey")
+}

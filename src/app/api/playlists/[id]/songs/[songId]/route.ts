@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { playlists } from "@/lib/playlist-store";
 import { songUpdateSchema } from "@/lib/validation";
+import prisma from "@/lib/prisma";
+import { Song } from "@/types";
 
 interface RouteParams {
   params: {
@@ -23,9 +24,12 @@ export async function OPTIONS() {
 // Get a specific song
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const resolvedParams = await params;
-    const { id, songId } = resolvedParams;
-    const playlist = playlists.find((p) => p.id === id);
+    const { id: playlistId, songId } = params;
+
+    // Check if playlist exists
+    const playlist = await prisma.playlist.findUnique({
+      where: { id: playlistId },
+    });
 
     if (!playlist) {
       return NextResponse.json(
@@ -34,14 +38,30 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const song = playlist.songs.find((s) => s.id === songId);
+    // Find the song
+    const song = await prisma.song.findFirst({
+      where: {
+        id: songId,
+        playlistId,
+      },
+    });
 
     if (!song) {
       return NextResponse.json({ error: "Song not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ song });
+    // Format response
+    const formattedSong: Song = {
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      album: song.album || undefined,
+      duration: song.duration || 0,
+    };
+
+    return NextResponse.json({ song: formattedSong });
   } catch (error) {
+    console.error("Error fetching song:", error);
     return NextResponse.json(
       { error: "Failed to fetch song" },
       { status: 500 }
@@ -52,48 +72,83 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // Update a song
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const resolvedParams = await params;
-    const { id, songId } = resolvedParams;
-    const playlistIndex = playlists.findIndex((p) => p.id === id);
+    const { id: playlistId, songId } = params;
 
-    if (playlistIndex === -1) {
+    // Check if playlist exists
+    const playlist = await prisma.playlist.findUnique({
+      where: { id: playlistId },
+    });
+
+    if (!playlist) {
       return NextResponse.json(
         { error: "Playlist not found" },
         { status: 404 }
       );
     }
 
-    const songIndex = playlists[playlistIndex].songs.findIndex(
-      (s) => s.id === songId
-    );
+    // Check if song exists
+    const existingSong = await prisma.song.findFirst({
+      where: {
+        id: songId,
+        playlistId,
+      },
+    });
 
-    if (songIndex === -1) {
+    if (!existingSong) {
       return NextResponse.json({ error: "Song not found" }, { status: 404 });
     }
 
     const body = await request.json();
+    console.log("Received update data:", body); // Log the received data
 
     // Validate the request body
     const validation = songUpdateSchema.safeParse(body);
 
     if (!validation.success) {
+      console.error("Validation error:", validation.error.format());
       return NextResponse.json(
         { error: validation.error.format() },
         { status: 400 }
       );
     }
 
+    // Prepare update data (only include fields that are present)
+    const updateData: any = {};
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.artist !== undefined) updateData.artist = body.artist;
+    if (body.album !== undefined) updateData.album = body.album || null; // Use null for DB
+    if (body.duration !== undefined) {
+      updateData.duration =
+        typeof body.duration === "number" ? body.duration : 0;
+    }
+
     // Update the song
-    const updatedSong = {
-      ...playlists[playlistIndex].songs[songIndex],
-      ...body,
+    const updatedSong = await prisma.song.update({
+      where: { id: songId },
+      data: updateData,
+    });
+
+    console.log("Updated song in database:", updatedSong); // Log the updated song
+
+    // Update playlist's updatedAt time
+    await prisma.playlist.update({
+      where: { id: playlistId },
+      data: { updatedAt: new Date() },
+    });
+
+    // Format response
+    const formattedSong: Song = {
+      id: updatedSong.id,
+      title: updatedSong.title,
+      artist: updatedSong.artist,
+      album: updatedSong.album || undefined,
+      duration: updatedSong.duration || 0,
     };
 
-    playlists[playlistIndex].songs[songIndex] = updatedSong;
-    playlists[playlistIndex].updatedAt = new Date();
-
-    return NextResponse.json({ song: updatedSong });
+    console.log("Returning formatted song:", formattedSong); // Log the formatted response
+    return NextResponse.json({ song: formattedSong });
   } catch (error) {
+    console.error("Error updating song:", error);
     return NextResponse.json(
       { error: "Failed to update song" },
       { status: 500 }
@@ -104,35 +159,58 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 // Delete a song
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const resolvedParams = await params;
-    const { id, songId } = resolvedParams;
-    const playlistIndex = playlists.findIndex((p) => p.id === id);
+    const { id: playlistId, songId } = params;
 
-    if (playlistIndex === -1) {
+    // Check if playlist exists
+    const playlist = await prisma.playlist.findUnique({
+      where: { id: playlistId },
+    });
+
+    if (!playlist) {
       return NextResponse.json(
         { error: "Playlist not found" },
         { status: 404 }
       );
     }
 
-    const songIndex = playlists[playlistIndex].songs.findIndex(
-      (s) => s.id === songId
-    );
+    // Check if song exists
+    const songToDelete = await prisma.song.findFirst({
+      where: {
+        id: songId,
+        playlistId,
+      },
+    });
 
-    if (songIndex === -1) {
+    if (!songToDelete) {
       return NextResponse.json({ error: "Song not found" }, { status: 404 });
     }
 
-    // Remove the song
-    const removedSong = playlists[playlistIndex].songs[songIndex];
-    playlists[playlistIndex].songs.splice(songIndex, 1);
-    playlists[playlistIndex].updatedAt = new Date();
+    // Format for response before deletion
+    const formattedSong: Song = {
+      id: songToDelete.id,
+      title: songToDelete.title,
+      artist: songToDelete.artist,
+      album: songToDelete.album || undefined,
+      duration: songToDelete.duration || 0,
+    };
+
+    // Delete the song
+    await prisma.song.delete({
+      where: { id: songId },
+    });
+
+    // Update playlist's updatedAt time
+    await prisma.playlist.update({
+      where: { id: playlistId },
+      data: { updatedAt: new Date() },
+    });
 
     return NextResponse.json(
-      { success: true, song: removedSong },
+      { success: true, song: formattedSong },
       { status: 200 }
     );
   } catch (error) {
+    console.error("Error deleting song:", error);
     return NextResponse.json(
       { error: "Failed to delete song" },
       { status: 500 }

@@ -1,8 +1,4 @@
-import { mockPlaylists } from "@/data/playlists";
 import { Playlist } from "@/types";
-
-// In-memory data store that can be imported by multiple routes
-export let playlists: Playlist[] = [...mockPlaylists];
 
 // Helper function to filter and sort playlists
 export function filterAndSortPlaylists(
