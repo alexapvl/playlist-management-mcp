@@ -120,6 +120,26 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  name: 'name',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LogScalarFieldEnum = {
+  id: 'id',
+  timestamp: 'timestamp',
+  userId: 'userId',
+  actionType: 'actionType',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  details: 'details'
+};
+
 exports.Prisma.PlaylistScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -127,7 +147,8 @@ exports.Prisma.PlaylistScalarFieldEnum = {
   coverImage: 'coverImage',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  songCount: 'songCount'
+  songCount: 'songCount',
+  userId: 'userId'
 };
 
 exports.Prisma.SongScalarFieldEnum = {
@@ -136,7 +157,9 @@ exports.Prisma.SongScalarFieldEnum = {
   artist: 'artist',
   album: 'album',
   duration: 'duration',
-  playlistId: 'playlistId'
+  playlistId: 'playlistId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -149,11 +172,26 @@ exports.Prisma.NullsOrder = {
   last: 'last'
 };
 
+exports.Prisma.UserOrderByRelevanceFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  name: 'name'
+};
+
+exports.Prisma.LogOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  entityId: 'entityId',
+  details: 'details'
+};
+
 exports.Prisma.PlaylistOrderByRelevanceFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
-  coverImage: 'coverImage'
+  coverImage: 'coverImage',
+  userId: 'userId'
 };
 
 exports.Prisma.SongOrderByRelevanceFieldEnum = {
@@ -163,9 +201,27 @@ exports.Prisma.SongOrderByRelevanceFieldEnum = {
   album: 'album',
   playlistId: 'playlistId'
 };
+exports.Role = exports.$Enums.Role = {
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+};
 
+exports.ActionType = exports.$Enums.ActionType = {
+  CREATE: 'CREATE',
+  READ: 'READ',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE'
+};
+
+exports.EntityType = exports.$Enums.EntityType = {
+  PLAYLIST: 'PLAYLIST',
+  SONG: 'SONG',
+  USER: 'USER'
+};
 
 exports.Prisma.ModelName = {
+  User: 'User',
+  Log: 'Log',
   Playlist: 'Playlist',
   Song: 'Song'
 };

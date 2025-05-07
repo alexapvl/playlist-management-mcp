@@ -26,7 +26,7 @@ export async function GET(
     // Check if playlist exists
     const playlist = await prisma.playlist.findUnique({
       where: { id: playlistId },
-      include: { Song: true },
+      include: { songs: true },
     });
 
     if (!playlist) {
@@ -37,7 +37,7 @@ export async function GET(
     }
 
     // Transform to expected format
-    const songs: Song[] = playlist.Song.map((s) => ({
+    const songs: Song[] = playlist.songs.map((s) => ({
       id: s.id,
       title: s.title,
       artist: s.artist,

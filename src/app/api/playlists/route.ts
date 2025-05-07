@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       take: pageSize,
       where: whereCondition,
       include: {
-        Song: true, // Include songs with each playlist
+        songs: true, // Using the correct field name in the updated Prisma client
       },
       orderBy: orderByCondition,
     });
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
       coverImage: p.coverImage || undefined,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
-      songs: p.Song.map((s) => ({
+      songs: p.songs.map((s: any) => ({
         id: s.id,
         title: s.title,
         artist: s.artist,
@@ -125,12 +125,17 @@ export async function GET(request: NextRequest) {
         itemsPerPage: pageSize,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     // Clear the timeout
     clearTimeout(timeoutId);
 
     // Handle aborted requests
-    if (error.name === "AbortError") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "name" in error &&
+      error.name === "AbortError"
+    ) {
       return NextResponse.json(
         { error: "Request timeout exceeded" },
         { status: 408 }
@@ -174,6 +179,9 @@ export async function POST(request: NextRequest) {
       updatedAt: now,
     };
 
+    // Get auth token
+    const token = request.cookies.get("auth_token")?.value;
+
     await prisma.playlist.create({
       data: {
         id: newPlaylist.id,
@@ -183,6 +191,7 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
         createdAt: now,
         songCount, // Store the song count for optimized sorting
+        userId: token, // Associate the playlist with the user
       },
     });
 
@@ -199,9 +208,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ playlist: newPlaylist }, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to create playlist" },
-      { status: 500 }
-    );
+    console.error("Error creating playlist:", error);
+
+    // Better error handling with specifics if available
+    let errorMessage = "Failed to create playlist";
+    if (error instanceof Error) {
+      errorMessage += `: ${error.message}`;
+    }
+
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

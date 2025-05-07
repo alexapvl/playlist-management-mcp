@@ -23,7 +23,7 @@ export async function GET(
 
     const playlist = await prisma.playlist.findUnique({
       where: { id: playlistId },
-      include: { Song: true },
+      include: { songs: true },
     });
 
     if (!playlist) {
@@ -41,7 +41,7 @@ export async function GET(
       coverImage: playlist.coverImage || undefined,
       createdAt: playlist.createdAt,
       updatedAt: playlist.updatedAt,
-      songs: playlist.Song.map((s) => ({
+      songs: playlist.songs.map((s: any) => ({
         id: s.id,
         title: s.title,
         artist: s.artist,
@@ -65,13 +65,13 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const playlistId = await params.id;
+    const playlistId = params.id;
     console.log("Playlist ID:", playlistId);
 
     // Check if playlist exists
     const existingPlaylist = await prisma.playlist.findUnique({
       where: { id: playlistId },
-      include: { Song: true },
+      include: { songs: true },
     });
 
     if (!existingPlaylist) {
@@ -120,7 +120,7 @@ export async function PATCH(
       );
 
       // Find songs that exist in the playlist but not in the request
-      const songsToDelete = existingPlaylist.Song.filter(
+      const songsToDelete = existingPlaylist.songs.filter(
         (song) => !requestSongIds.has(song.id)
       );
 
@@ -191,7 +191,7 @@ export async function PATCH(
     // Fetch the updated playlist with all songs
     const finalPlaylist = await prisma.playlist.findUnique({
       where: { id: playlistId },
-      include: { Song: true },
+      include: { songs: true },
     });
 
     // Handle case where finalPlaylist might be null
@@ -210,7 +210,7 @@ export async function PATCH(
       coverImage: finalPlaylist.coverImage || undefined,
       createdAt: finalPlaylist.createdAt,
       updatedAt: finalPlaylist.updatedAt,
-      songs: finalPlaylist.Song.map((s) => ({
+      songs: finalPlaylist.songs.map((s: any) => ({
         id: s.id,
         title: s.title,
         artist: s.artist,
@@ -234,18 +234,35 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const playlistId = await params.id;
+    const playlistId = params.id;
+
+    // Additional authentication check at API level
+    const token = request.cookies.get("auth_token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
 
     // Check if playlist exists
     const existingPlaylist = await prisma.playlist.findUnique({
       where: { id: playlistId },
-      include: { Song: true },
+      include: { songs: true },
     });
 
     if (!existingPlaylist) {
       return NextResponse.json(
         { error: "Playlist not found" },
         { status: 404 }
+      );
+    }
+
+    // If playlist has an owner, verify the user owns this playlist
+    if (existingPlaylist.userId && existingPlaylist.userId !== token) {
+      return NextResponse.json(
+        { error: "You don't have permission to delete this playlist" },
+        { status: 403 }
       );
     }
 
@@ -262,7 +279,7 @@ export async function DELETE(
       coverImage: existingPlaylist.coverImage || undefined,
       createdAt: existingPlaylist.createdAt,
       updatedAt: existingPlaylist.updatedAt,
-      songs: existingPlaylist.Song.map((s) => ({
+      songs: existingPlaylist.songs.map((s: any) => ({
         id: s.id,
         title: s.title,
         artist: s.artist,
