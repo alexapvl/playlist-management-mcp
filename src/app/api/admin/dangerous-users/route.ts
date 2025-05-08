@@ -40,13 +40,28 @@ export async function GET(request: NextRequest) {
 
 /**
  * Identifies users who have made more than 30 requests in any 60-second time window
+ * Only considers logs from the past 10 minutes
  */
 async function getDangerousUsers() {
-  // Get all logs ordered by timestamp
+  // Calculate timestamp from 10 minutes ago
+  const tenMinutesAgo = new Date();
+  tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
+
+  // Get logs from the past 10 minutes, ordered by timestamp
   const logs = await prisma.log.findMany({
+    where: {
+      timestamp: {
+        gte: tenMinutesAgo,
+      },
+    },
     orderBy: { timestamp: "asc" },
     include: { user: true },
   });
+
+  // Skip processing if no recent logs
+  if (logs.length === 0) {
+    return [];
+  }
 
   // Group logs by userId
   const userLogs: Record<
