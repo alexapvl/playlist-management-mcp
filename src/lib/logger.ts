@@ -61,12 +61,54 @@ export async function getUserLogs(userId: string, limit = 50, offset = 0) {
 }
 
 /**
- * Get all logs (admin only)
+ * Get all logs with filtering and sorting options (admin only)
  */
-export async function getAllLogs(limit = 100, offset = 0) {
+export async function getAllLogs(
+  limit = 100,
+  offset = 0,
+  entityType?: EntityType | null,
+  actionType?: ActionType | null,
+  sortField: string = "timestamp",
+  sortDirection: "asc" | "desc" = "desc"
+) {
   try {
+    // Build where clause based on filters
+    const where: any = {};
+
+    if (entityType) {
+      where.entityType = entityType;
+    }
+
+    if (actionType) {
+      where.actionType = actionType;
+    }
+
+    // Build orderBy object based on sort field and direction
+    const orderBy: any = {};
+
+    // Handle different sort fields
+    switch (sortField) {
+      case "timestamp":
+        orderBy.timestamp = sortDirection;
+        break;
+      case "actionType":
+        orderBy.actionType = sortDirection;
+        break;
+      case "entityType":
+        orderBy.entityType = sortDirection;
+        break;
+      case "user":
+        // For user sorting, we need to sort by userId
+        orderBy.userId = sortDirection;
+        break;
+      default:
+        // Default to timestamp
+        orderBy.timestamp = sortDirection;
+    }
+
     const logs = await prisma.log.findMany({
-      orderBy: { timestamp: "desc" },
+      where,
+      orderBy,
       take: limit,
       skip: offset,
       include: { user: true },
@@ -101,6 +143,33 @@ export async function getEntityLogs(
     return logs;
   } catch (error) {
     console.error("Error fetching entity logs:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get a count of logs with filters
+ */
+export async function getLogsCount(
+  entityType?: EntityType | null,
+  actionType?: ActionType | null
+) {
+  try {
+    // Build where clause based on filters
+    const where: any = {};
+
+    if (entityType) {
+      where.entityType = entityType;
+    }
+
+    if (actionType) {
+      where.actionType = actionType;
+    }
+
+    const count = await prisma.log.count({ where });
+    return count;
+  } catch (error) {
+    console.error("Error counting logs:", error);
     throw error;
   }
 }
