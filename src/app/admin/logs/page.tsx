@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -57,6 +57,8 @@ export default function LogsPage() {
   });
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "ADMIN")) {
@@ -192,6 +194,7 @@ export default function LogsPage() {
 
       const data = await response.json();
       setDangerousUsers(data);
+      setLastRefreshed(new Date());
     } catch (err) {
       console.error("Error fetching dangerous users:", err);
       setError("Failed to load dangerous users. Please try again later.");
@@ -199,6 +202,34 @@ export default function LogsPage() {
       setLoading(false);
     }
   };
+
+  // Set up auto-refresh for dangerous users
+  useEffect(() => {
+    // Clear any existing interval when view mode changes
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
+    }
+
+    // Only set up the interval if in dangerous users view
+    if (viewMode === "dangerous" && user && user.role === "ADMIN") {
+      // Initial fetch
+      fetchDangerousUsers();
+
+      // Set up an interval to refresh every 5 seconds
+      refreshIntervalRef.current = setInterval(() => {
+        fetchDangerousUsers();
+      }, 5000);
+    }
+
+    // Clean up on unmount or when viewMode changes
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
+  }, [viewMode, user]);
 
   // When filters change, reset to page 1
   useEffect(() => {
@@ -216,8 +247,6 @@ export default function LogsPage() {
     if (user && user.role === "ADMIN") {
       if (viewMode === "logs") {
         fetchLogs();
-      } else {
-        fetchDangerousUsers();
       }
     }
   }, [
@@ -286,29 +315,6 @@ export default function LogsPage() {
             >
               View Dangerous Users
             </button>
-            {viewMode === "dangerous" && (
-              <button
-                onClick={fetchDangerousUsers}
-                className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white flex items-center"
-                title="Refresh list with latest data from the past 10 minutes"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                Refresh List
-              </button>
-            )}
           </div>
         </div>
 
@@ -513,7 +519,7 @@ export default function LogsPage() {
           ) : (
             <div className="overflow-x-auto">
               <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-md">
-                <p className="text-blue-800 dark:text-blue-200 text-sm flex items-center">
+                <p className="text-blue-800 dark:text-blue-200 text-sm flex items-center flex-wrap">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5 mr-2"
@@ -528,8 +534,15 @@ export default function LogsPage() {
                       d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  This list shows users with suspicious activity from the past
-                  10 minutes only. Click refresh to check for the latest data.
+                  <span>
+                    This list shows users with suspicious activity from the past
+                    10 minutes only. Auto-refreshes every 5 seconds.
+                  </span>
+                  {lastRefreshed && (
+                    <span className="ml-2 text-xs text-blue-600 dark:text-blue-300">
+                      Last updated: {format(lastRefreshed, "HH:mm:ss")}
+                    </span>
+                  )}
                 </p>
               </div>
               <table className="min-w-full bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
