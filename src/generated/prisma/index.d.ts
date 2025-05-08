@@ -2377,7 +2377,7 @@ export namespace Prisma {
   export type LogGroupByOutputType = {
     id: string
     timestamp: Date
-    userId: string
+    userId: string | null
     actionType: $Enums.ActionType
     entityType: $Enums.EntityType
     entityId: string
@@ -2409,7 +2409,7 @@ export namespace Prisma {
     entityType?: boolean
     entityId?: boolean
     details?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | Log$userArgs<ExtArgs>
   }, ExtArgs["result"]["log"]>
 
 
@@ -2426,18 +2426,18 @@ export namespace Prisma {
 
   export type LogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "timestamp" | "userId" | "actionType" | "entityType" | "entityId" | "details", ExtArgs["result"]["log"]>
   export type LogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | Log$userArgs<ExtArgs>
   }
 
   export type $LogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Log"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       timestamp: Date
-      userId: string
+      userId: string | null
       actionType: $Enums.ActionType
       entityType: $Enums.EntityType
       entityId: string
@@ -2782,7 +2782,7 @@ export namespace Prisma {
    */
   export interface Prisma__LogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends Log$userArgs<ExtArgs> = {}>(args?: Subset<T, Log$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3159,6 +3159,25 @@ export namespace Prisma {
      * Limit how many Logs to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Log.user
+   */
+  export type Log$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -5479,18 +5498,18 @@ export namespace Prisma {
     NOT?: LogWhereInput | LogWhereInput[]
     id?: StringFilter<"Log"> | string
     timestamp?: DateTimeFilter<"Log"> | Date | string
-    userId?: StringFilter<"Log"> | string
+    userId?: StringNullableFilter<"Log"> | string | null
     actionType?: EnumActionTypeFilter<"Log"> | $Enums.ActionType
     entityType?: EnumEntityTypeFilter<"Log"> | $Enums.EntityType
     entityId?: StringFilter<"Log"> | string
     details?: StringNullableFilter<"Log"> | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
 
   export type LogOrderByWithRelationInput = {
     id?: SortOrder
     timestamp?: SortOrder
-    userId?: SortOrder
+    userId?: SortOrderInput | SortOrder
     actionType?: SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
@@ -5505,18 +5524,18 @@ export namespace Prisma {
     OR?: LogWhereInput[]
     NOT?: LogWhereInput | LogWhereInput[]
     timestamp?: DateTimeFilter<"Log"> | Date | string
-    userId?: StringFilter<"Log"> | string
+    userId?: StringNullableFilter<"Log"> | string | null
     actionType?: EnumActionTypeFilter<"Log"> | $Enums.ActionType
     entityType?: EnumEntityTypeFilter<"Log"> | $Enums.EntityType
     entityId?: StringFilter<"Log"> | string
     details?: StringNullableFilter<"Log"> | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }, "id">
 
   export type LogOrderByWithAggregationInput = {
     id?: SortOrder
     timestamp?: SortOrder
-    userId?: SortOrder
+    userId?: SortOrderInput | SortOrder
     actionType?: SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
@@ -5532,7 +5551,7 @@ export namespace Prisma {
     NOT?: LogScalarWhereWithAggregatesInput | LogScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Log"> | string
     timestamp?: DateTimeWithAggregatesFilter<"Log"> | Date | string
-    userId?: StringWithAggregatesFilter<"Log"> | string
+    userId?: StringNullableWithAggregatesFilter<"Log"> | string | null
     actionType?: EnumActionTypeWithAggregatesFilter<"Log"> | $Enums.ActionType
     entityType?: EnumEntityTypeWithAggregatesFilter<"Log"> | $Enums.EntityType
     entityId?: StringWithAggregatesFilter<"Log"> | string
@@ -5773,13 +5792,13 @@ export namespace Prisma {
     entityType: $Enums.EntityType
     entityId: string
     details?: string | null
-    user: UserCreateNestedOneWithoutLogsInput
+    user?: UserCreateNestedOneWithoutLogsInput
   }
 
   export type LogUncheckedCreateInput = {
     id?: string
     timestamp?: Date | string
-    userId: string
+    userId?: string | null
     actionType: $Enums.ActionType
     entityType: $Enums.EntityType
     entityId: string
@@ -5793,13 +5812,13 @@ export namespace Prisma {
     entityType?: EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
     entityId?: StringFieldUpdateOperationsInput | string
     details?: NullableStringFieldUpdateOperationsInput | string | null
-    user?: UserUpdateOneRequiredWithoutLogsNestedInput
+    user?: UserUpdateOneWithoutLogsNestedInput
   }
 
   export type LogUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     actionType?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType
     entityType?: EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
     entityId?: StringFieldUpdateOperationsInput | string
@@ -5809,7 +5828,7 @@ export namespace Prisma {
   export type LogCreateManyInput = {
     id?: string
     timestamp?: Date | string
-    userId: string
+    userId?: string | null
     actionType: $Enums.ActionType
     entityType: $Enums.EntityType
     entityId: string
@@ -5828,7 +5847,7 @@ export namespace Prisma {
   export type LogUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     actionType?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType
     entityType?: EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
     entityId?: StringFieldUpdateOperationsInput | string
@@ -6174,9 +6193,9 @@ export namespace Prisma {
     not?: NestedEnumEntityTypeFilter<$PrismaModel> | $Enums.EntityType
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
   }
 
   export type LogOrderByRelevanceInput = {
@@ -6244,11 +6263,6 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
-  }
-
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
   }
 
   export type SongListRelationFilter = {
@@ -6517,10 +6531,12 @@ export namespace Prisma {
     set?: $Enums.EntityType
   }
 
-  export type UserUpdateOneRequiredWithoutLogsNestedInput = {
+  export type UserUpdateOneWithoutLogsNestedInput = {
     create?: XOR<UserCreateWithoutLogsInput, UserUncheckedCreateWithoutLogsInput>
     connectOrCreate?: UserCreateOrConnectWithoutLogsInput
     upsert?: UserUpsertWithoutLogsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutLogsInput, UserUpdateWithoutLogsInput>, UserUncheckedUpdateWithoutLogsInput>
   }
@@ -6943,7 +6959,7 @@ export namespace Prisma {
     NOT?: LogScalarWhereInput | LogScalarWhereInput[]
     id?: StringFilter<"Log"> | string
     timestamp?: DateTimeFilter<"Log"> | Date | string
-    userId?: StringFilter<"Log"> | string
+    userId?: StringNullableFilter<"Log"> | string | null
     actionType?: EnumActionTypeFilter<"Log"> | $Enums.ActionType
     entityType?: EnumEntityTypeFilter<"Log"> | $Enums.EntityType
     entityId?: StringFilter<"Log"> | string

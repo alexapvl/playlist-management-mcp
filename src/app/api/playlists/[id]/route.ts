@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Playlist } from "@/types";
 import { playlistUpdateSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
+import { logUserAction } from "@/lib/logger";
+import { ActionType, EntityType } from "@/generated/prisma";
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -49,6 +51,22 @@ export async function GET(
         duration: s.duration || 0,
       })),
     };
+
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Log the playlist read action
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.READ,
+        entityType: EntityType.PLAYLIST,
+        entityId: playlistId,
+        details: `Viewed playlist "${playlist.name}"`,
+      });
+    } catch (error) {
+      console.error("Error logging playlist view:", error);
+    }
 
     return NextResponse.json({ playlist: formattedPlaylist });
   } catch (error) {
@@ -108,7 +126,23 @@ export async function PATCH(
       data: updateData,
     });
 
+    // Track changes for logging
+    const changes = [];
+    if (body.name && body.name !== existingPlaylist.name) {
+      changes.push(`name from "${existingPlaylist.name}" to "${body.name}"`);
+    }
+    if (body.description && body.description !== existingPlaylist.description) {
+      changes.push("description");
+    }
+    if (body.coverImage && body.coverImage !== existingPlaylist.coverImage) {
+      changes.push("cover image");
+    }
+
     // Handle songs if they're provided in the request
+    let songsAdded = 0;
+    let songsRemoved = 0;
+    let songsUpdated = 0;
+
     if (body.songs && Array.isArray(body.songs)) {
       console.log(`Processing ${body.songs.length} songs`);
 
@@ -126,6 +160,7 @@ export async function PATCH(
 
       // Delete songs that are no longer in the playlist
       if (songsToDelete.length > 0) {
+        songsRemoved = songsToDelete.length;
         console.log(
           `Deleting ${songsToDelete.length} songs no longer in playlist`
         );
@@ -156,6 +191,17 @@ export async function PATCH(
               console.log(
                 `Connected existing song ${song.id} to playlist ${playlistId}`
               );
+              songsAdded++;
+            } else {
+              // The song is already in this playlist, check if it needs an update
+              if (
+                existingSong.title !== song.title ||
+                existingSong.artist !== song.artist ||
+                existingSong.album !== song.album ||
+                existingSong.duration !== song.duration
+              ) {
+                songsUpdated++;
+              }
             }
           } else {
             // Song ID provided but not found, create a new one with this ID
@@ -170,6 +216,7 @@ export async function PATCH(
               },
             });
             console.log(`Created song with provided ID ${song.id}`);
+            songsAdded++;
           }
         } else {
           // No ID provided, create a new song
@@ -184,6 +231,7 @@ export async function PATCH(
             },
           });
           console.log(`Created new song with generated ID ${newSong.id}`);
+          songsAdded++;
         }
       }
     }
@@ -200,6 +248,31 @@ export async function PATCH(
         { error: "Failed to retrieve updated playlist" },
         { status: 500 }
       );
+    }
+
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Build log details
+    let logDetails = "Updated playlist";
+    if (changes.length > 0) {
+      logDetails += ` fields: ${changes.join(", ")}`;
+    }
+    if (songsAdded > 0 || songsRemoved > 0 || songsUpdated > 0) {
+      logDetails += `. Songs: ${songsAdded} added, ${songsRemoved} removed, ${songsUpdated} updated`;
+    }
+
+    // Log the playlist update action
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.UPDATE,
+        entityType: EntityType.PLAYLIST,
+        entityId: playlistId,
+        details: logDetails,
+      });
+    } catch (error) {
+      console.error("Error logging playlist update:", error);
     }
 
     // Format the response data
@@ -234,7 +307,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const playlistId = (await params).id;
+    const playlistId = params.id;
 
     // Additional authentication check at API level
     const token = request.cookies.get("auth_token")?.value;
@@ -248,7 +321,6 @@ export async function DELETE(
     // Check if playlist exists
     const existingPlaylist = await prisma.playlist.findUnique({
       where: { id: playlistId },
-      include: { songs: true },
     });
 
     if (!existingPlaylist) {
@@ -258,38 +330,26 @@ export async function DELETE(
       );
     }
 
-    // If playlist has an owner, verify the user owns this playlist
-    if (existingPlaylist.userId && existingPlaylist.userId !== token) {
-      return NextResponse.json(
-        { error: "You don't have permission to delete this playlist" },
-        { status: 403 }
-      );
-    }
-
-    // Delete the playlist (this will cascade delete songs due to the relation)
+    // Delete the playlist (this will cascade delete songs due to the onDelete: Cascade setting)
     await prisma.playlist.delete({
       where: { id: playlistId },
     });
 
-    // Transform to the expected format for the response
-    const formattedPlaylist: Playlist = {
-      id: existingPlaylist.id,
-      name: existingPlaylist.name,
-      description: existingPlaylist.description,
-      coverImage: existingPlaylist.coverImage || undefined,
-      createdAt: existingPlaylist.createdAt,
-      updatedAt: existingPlaylist.updatedAt,
-      songs: existingPlaylist.songs.map((s: any) => ({
-        id: s.id,
-        title: s.title,
-        artist: s.artist,
-        album: s.album || undefined,
-        duration: s.duration || 0,
-      })),
-    };
+    // Log the playlist deletion
+    try {
+      await logUserAction({
+        userId: token || null,
+        actionType: ActionType.DELETE,
+        entityType: EntityType.PLAYLIST,
+        entityId: playlistId,
+        details: `Deleted playlist "${existingPlaylist.name}"`,
+      });
+    } catch (error) {
+      console.error("Error logging playlist deletion:", error);
+    }
 
     return NextResponse.json(
-      { success: true, playlist: formattedPlaylist },
+      { message: "Playlist deleted successfully" },
       { status: 200 }
     );
   } catch (error) {

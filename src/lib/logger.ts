@@ -11,21 +11,28 @@ export async function logUserAction({
   entityId,
   details,
 }: {
-  userId: string;
+  userId: string | null;
   actionType: ActionType;
   entityType: EntityType;
   entityId: string;
   details?: string;
 }) {
   try {
+    // Create the data object with conditional userId
+    const logData: any = {
+      actionType,
+      entityType,
+      entityId,
+      details,
+    };
+
+    // Only add userId if it's not null
+    if (userId !== null) {
+      logData.userId = userId;
+    }
+
     await prisma.log.create({
-      data: {
-        userId,
-        actionType,
-        entityType,
-        entityId,
-        details,
-      },
+      data: logData,
     });
   } catch (error) {
     console.error("Error logging user action:", error);

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { songUpdateSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
 import { Song } from "@/types";
+import { logUserAction } from "@/lib/logger";
+import { ActionType, EntityType } from "@/generated/prisma";
 
 interface RouteParams {
   params: {
@@ -58,6 +60,22 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       album: song.album || undefined,
       duration: song.duration || 0,
     };
+
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Log the song view
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.READ,
+        entityType: EntityType.SONG,
+        entityId: songId,
+        details: `Viewed song "${song.title}" by ${song.artist} in playlist "${playlist.name}"`,
+      });
+    } catch (error) {
+      console.error("Error logging song view:", error);
+    }
 
     return NextResponse.json({ song: formattedSong });
   } catch (error) {
@@ -136,6 +154,46 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       data: { updatedAt: new Date() },
     });
 
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Track changes for logging
+    const changes = [];
+    if (body.title !== undefined && body.title !== existingSong.title) {
+      changes.push(`title from "${existingSong.title}" to "${body.title}"`);
+    }
+    if (body.artist !== undefined && body.artist !== existingSong.artist) {
+      changes.push(`artist from "${existingSong.artist}" to "${body.artist}"`);
+    }
+    if (body.album !== undefined && body.album !== existingSong.album) {
+      const oldAlbum = existingSong.album || "none";
+      const newAlbum = body.album || "none";
+      changes.push(`album from "${oldAlbum}" to "${newAlbum}"`);
+    }
+    if (
+      body.duration !== undefined &&
+      body.duration !== existingSong.duration
+    ) {
+      changes.push(
+        `duration from ${existingSong.duration}s to ${body.duration}s`
+      );
+    }
+
+    // Log the song update
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.UPDATE,
+        entityType: EntityType.SONG,
+        entityId: songId,
+        details: `Updated song in playlist "${
+          playlist.name
+        }". Changed: ${changes.join(", ")}`,
+      });
+    } catch (error) {
+      console.error("Error logging song update:", error);
+    }
+
     // Format response
     const formattedSong: Song = {
       id: updatedSong.id,
@@ -212,6 +270,22 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         songCount: songCount, // Update songCount for better performance
       },
     });
+
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Log the song deletion
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.DELETE,
+        entityType: EntityType.SONG,
+        entityId: songId,
+        details: `Deleted song "${songToDelete.title}" by ${songToDelete.artist} from playlist "${playlist.name}"`,
+      });
+    } catch (error) {
+      console.error("Error logging song deletion:", error);
+    }
 
     return NextResponse.json(
       { success: true, song: formattedSong },

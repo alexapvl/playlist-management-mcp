@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { filterAndSortPlaylists } from "@/lib/playlist-store";
 import { playlistSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
+import { logUserAction } from "@/lib/logger";
+import { ActionType, EntityType } from "@/generated/prisma";
 
 // Add timeout for request handling
 const TIMEOUT_MS = 10000;
@@ -113,6 +115,23 @@ export async function GET(request: NextRequest) {
     // Calculate total pages
     const totalPages = Math.ceil(totalCount / pageSize);
 
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Log the playlist read action
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.READ,
+        entityType: EntityType.PLAYLIST,
+        entityId: "all", // Reading all playlists
+        details: `GET /api/playlists - Query: ${query}, Sort: ${sortType}, Page: ${page}`,
+      });
+    } catch (error) {
+      console.error("Error logging playlist read action:", error);
+      // Continue execution even if logging fails
+    }
+
     // Clear the timeout since we're done
     clearTimeout(timeoutId);
 
@@ -205,6 +224,20 @@ export async function POST(request: NextRequest) {
         playlistId: newPlaylist.id,
       })),
     });
+
+    // Log the playlist creation
+    try {
+      await logUserAction({
+        userId: token || null,
+        actionType: ActionType.CREATE,
+        entityType: EntityType.PLAYLIST,
+        entityId: newPlaylist.id,
+        details: `Created playlist "${newPlaylist.name}" with ${songCount} songs`,
+      });
+    } catch (error) {
+      console.error("Error logging playlist creation:", error);
+      // Continue execution even if logging fails
+    }
 
     return NextResponse.json({ playlist: newPlaylist }, { status: 201 });
   } catch (error) {

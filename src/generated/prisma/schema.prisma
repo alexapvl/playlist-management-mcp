@@ -45,8 +45,8 @@ enum EntityType {
 model Log {
   id         String     @id @default(uuid())
   timestamp  DateTime   @default(now())
-  userId     String // Who performed the action
-  user       User       @relation(fields: [userId], references: [id])
+  userId     String? // Who performed the action (nullable)
+  user       User?      @relation(fields: [userId], references: [id])
   actionType ActionType // What action was performed
   entityType EntityType // What type of entity was affected
   entityId   String // ID of the affected entity

@@ -3,6 +3,8 @@ import { Song } from "@/types";
 import { songSchema } from "@/lib/validation";
 import { v4 as uuidv4 } from "uuid";
 import prisma from "@/lib/prisma";
+import { logUserAction } from "@/lib/logger";
+import { ActionType, EntityType } from "@/generated/prisma";
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -44,6 +46,22 @@ export async function GET(
       album: s.album || undefined,
       duration: s.duration || 0,
     }));
+
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Log the song list view action
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.READ,
+        entityType: EntityType.SONG,
+        entityId: `playlist:${playlistId}`,
+        details: `Viewed songs in playlist "${playlist.name}" (${songs.length} songs)`,
+      });
+    } catch (error) {
+      console.error("Error logging song list view:", error);
+    }
 
     return NextResponse.json({ songs });
   } catch (error) {
@@ -122,6 +140,22 @@ export async function POST(
         songCount: songCount, // Update songCount field for better sorting performance
       },
     });
+
+    // Get user ID for logging
+    const userId = request.cookies.get("auth_token")?.value || null;
+
+    // Log the song creation
+    try {
+      await logUserAction({
+        userId,
+        actionType: ActionType.CREATE,
+        entityType: EntityType.SONG,
+        entityId: songId,
+        details: `Added song "${body.title}" by ${body.artist} to playlist "${playlist.name}"`,
+      });
+    } catch (error) {
+      console.error("Error logging song creation:", error);
+    }
 
     // Format for response
     const formattedSong: Song = {
