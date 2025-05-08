@@ -234,7 +234,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const playlistId = params.id;
+    const playlistId = (await params).id;
 
     // Additional authentication check at API level
     const token = request.cookies.get("auth_token")?.value;
