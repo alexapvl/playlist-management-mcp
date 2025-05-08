@@ -62,40 +62,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     itemsPerPage: 10,
   });
 
-  // Fetch playlists on component mount
-  useEffect(() => {
-    fetchPlaylists();
-  }, []);
-
-  // Update search results when query or sort type changes
-  useEffect(() => {
-    // Reset to page 1 when search query or sort changes
-    setPagination((prev) => ({ ...prev, currentPage: 1 }));
-    fetchPlaylists();
-  }, [searchQuery, sortType]);
-
-  // Update when pagination changes
-  useEffect(() => {
-    // Only fetch if this isn't the initial render
-    if (pagination.totalItems > 0) {
-      fetchPlaylists();
-    }
-  }, [pagination.currentPage, pagination.itemsPerPage]);
-
-  const setCurrentPage = (page: number) => {
-    setPagination((prev) => ({ ...prev, currentPage: page }));
-  };
-
-  const setItemsPerPage = (pageSize: number) => {
-    setPagination((prev) => ({
-      ...prev,
-      itemsPerPage: pageSize,
-      currentPage: 1,
-    }));
-  };
-
-  // Fetch playlists from the API
-  const fetchPlaylists = async () => {
+  // Define fetchPlaylistsData outside useEffect so it can be used by other functions
+  const fetchPlaylistsData = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -111,6 +79,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       queryParams.append("page", pagination.currentPage.toString());
       queryParams.append("pageSize", pagination.itemsPerPage.toString());
 
+      console.log("Fetching playlists with params:", queryParams.toString());
+
       const response = await fetch(`/api/playlists?${queryParams.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch playlists");
@@ -121,7 +91,13 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
 
       // Update pagination state with response data
       if (data.pagination) {
-        setPagination(data.pagination);
+        // Don't update currentPage here to avoid loops
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: data.pagination.totalPages,
+          totalItems: data.pagination.totalItems,
+          itemsPerPage: data.pagination.itemsPerPage,
+        }));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
@@ -129,6 +105,49 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Store previous search and sort values to detect changes
+  const [prevSearchSort, setPrevSearchSort] = useState({
+    query: searchQuery,
+    sort: sortType,
+  });
+
+  // Combined useEffect for handling all data fetching scenarios
+  useEffect(() => {
+    // Check if search or sort changed
+    const searchSortChanged =
+      prevSearchSort.query !== searchQuery || prevSearchSort.sort !== sortType;
+
+    if (searchSortChanged) {
+      // Update tracking of previous values
+      setPrevSearchSort({ query: searchQuery, sort: sortType });
+
+      // Reset to page 1 when search/sort changes, but don't fetch yet
+      setPagination((prev) => ({
+        ...prev,
+        currentPage: 1,
+      }));
+    } else {
+      // Only fetch if this is not a search/sort change (which will trigger pagination change)
+      console.log(
+        `Fetching data with: page=${pagination.currentPage}, size=${pagination.itemsPerPage}, query=${searchQuery}, sort=${sortType}`
+      );
+      fetchPlaylistsData();
+    }
+  }, [searchQuery, sortType, pagination.currentPage, pagination.itemsPerPage]);
+
+  // Update the page changing functions to be more straightforward
+  const setCurrentPage = (page: number) => {
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+  };
+
+  const setItemsPerPage = (pageSize: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      itemsPerPage: pageSize,
+      currentPage: 1, // Reset to page 1 when changing page size
+    }));
   };
 
   // Add a new playlist
@@ -152,7 +171,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       }
 
       // Refresh playlists after adding
-      await fetchPlaylists();
+      await fetchPlaylistsData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error adding playlist:", err);
@@ -184,7 +203,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       }
 
       // Refresh playlists after updating
-      await fetchPlaylists();
+      await fetchPlaylistsData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error updating playlist:", err);
@@ -208,7 +227,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       }
 
       // Refresh playlists after deleting
-      await fetchPlaylists();
+      await fetchPlaylistsData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error deleting playlist:", err);
@@ -233,7 +252,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       );
 
       // Fetch the playlists again (which should now be the defaults from the server)
-      await fetchPlaylists();
+      await fetchPlaylistsData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error resetting playlists:", err);
@@ -261,7 +280,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       }
 
       // Refresh playlists after adding a song
-      await fetchPlaylists();
+      await fetchPlaylistsData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error adding song:", err);
@@ -292,7 +311,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       }
 
       // Refresh playlists after updating a song
-      await fetchPlaylists();
+      await fetchPlaylistsData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error updating song:", err);
@@ -319,7 +338,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       }
 
       // Refresh playlists after deleting a song
-      await fetchPlaylists();
+      await fetchPlaylistsData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       console.error("Error deleting song:", err);

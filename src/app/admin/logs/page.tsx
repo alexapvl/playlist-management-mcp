@@ -132,11 +132,17 @@ export default function LogsPage() {
                       {format(new Date(log.timestamp), "MMM d, yyyy HH:mm:ss")}
                     </td>
                     <td className="py-3 px-4 text-gray-800 dark:text-gray-200">
-                      {log.user.name || log.user.email}
-                      {log.user.role === "ADMIN" && (
-                        <span className="ml-2 text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 px-2 py-1 rounded">
-                          Admin
-                        </span>
+                      {log.user ? (
+                        <>
+                          {log.user.name || log.user.email || "Anonymous"}
+                          {log.user.role === "ADMIN" && (
+                            <span className="ml-2 text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 px-2 py-1 rounded">
+                              Admin
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-gray-500">Anonymous</span>
                       )}
                     </td>
                     <td className="py-3 px-4">
@@ -159,7 +165,7 @@ export default function LogsPage() {
                         {log.entityType}
                       </span>
                       <span className="block text-xs text-gray-500 dark:text-gray-400">
-                        ID: {log.entityId.substring(0, 8)}...
+                        ID: {log.entityId}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-gray-800 dark:text-gray-200">
