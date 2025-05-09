@@ -60,7 +60,7 @@ export async function middleware(request: NextRequest) {
     if (!userAuthenticated) {
       console.log("Authentication failed, returning 401");
       return NextResponse.json(
-        { error: "Authentication required for this operation." },
+        { error: "Please login in order to perform any actions." },
         { status: 401 }
       );
     }

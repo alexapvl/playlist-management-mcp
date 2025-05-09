@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { hashPassword, setAuthCookie } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
 import { z } from "zod";
 
 // Input validation schema
@@ -50,9 +50,6 @@ export async function POST(request: Request) {
         role,
       },
     });
-
-    // Set auth cookie
-    setAuthCookie(user.id);
 
     // Return user data (excluding password hash)
     const { passwordHash: _, ...userData } = user;

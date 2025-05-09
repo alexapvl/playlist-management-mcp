@@ -12,6 +12,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
@@ -20,6 +21,7 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
@@ -27,18 +29,25 @@ export default function AuthPage() {
 
       if (isLogin) {
         success = await login(email, password);
+        if (success) {
+          router.push("/");
+        } else {
+          setError("Invalid email or password");
+        }
       } else {
         success = await register(email, password, name, isAdmin);
-      }
-
-      if (success) {
-        router.push("/");
-      } else {
-        setError(
-          isLogin
-            ? "Invalid email or password"
-            : "Registration failed. Email might already be in use."
-        );
+        if (success) {
+          setIsLogin(true);
+          setEmail("");
+          setPassword("");
+          setName("");
+          setIsAdmin(false);
+          setSuccess(
+            "Registration successful! Please login with your credentials."
+          );
+        } else {
+          setError("Registration failed. Email might already be in use.");
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -157,6 +166,10 @@ export default function AuthPage() {
 
           {error && (
             <div className="text-red-500 text-sm text-center">{error}</div>
+          )}
+
+          {success && (
+            <div className="text-green-500 text-sm text-center">{success}</div>
           )}
 
           <div>

@@ -88,8 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+        // Don't set user state after registration
         return true;
       }
       return false;
