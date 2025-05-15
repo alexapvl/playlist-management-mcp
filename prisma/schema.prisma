@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -70,6 +70,7 @@ model Playlist {
   userId      String?
   user        User?    @relation(fields: [userId], references: [id])
   songs       Song[]   @relation("PlaylistToSong")
+  // PostgreSQL doesn't support Prisma's fulltext index - removing
 
   // Add indexes for search and sort operations
   @@index([name])
@@ -78,8 +79,6 @@ model Playlist {
   @@index([songCount])
   @@index([name, updatedAt])
   @@index([userId])
-  // Add full-text search indexes
-  @@fulltext([name, description])
 }
 
 model Song {
@@ -93,8 +92,8 @@ model Song {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 
-  // The existing index
-  @@index([playlistId], map: "Song_playlistId_fkey")
+  // Updated index with unique map name
+  @@index([playlistId], map: "Song_playlist_relation_idx")
   // Add indexes for song filtering and sorting
   @@index([title])
   @@index([artist])

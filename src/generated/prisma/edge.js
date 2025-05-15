@@ -139,39 +139,14 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
-};
-
-exports.Prisma.UserOrderByRelevanceFieldEnum = {
-  id: 'id',
-  email: 'email',
-  passwordHash: 'passwordHash',
-  name: 'name'
-};
-
-exports.Prisma.LogOrderByRelevanceFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  entityId: 'entityId',
-  details: 'details'
-};
-
-exports.Prisma.PlaylistOrderByRelevanceFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  coverImage: 'coverImage',
-  userId: 'userId'
-};
-
-exports.Prisma.SongOrderByRelevanceFieldEnum = {
-  id: 'id',
-  title: 'title',
-  artist: 'artist',
-  album: 'album',
-  playlistId: 'playlistId'
 };
 exports.Role = exports.$Enums.Role = {
   USER: 'USER',
@@ -235,17 +210,17 @@ const config = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "mysql",
+  "activeProvider": "postgresql",
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "mysql://root:@localhost:3306/playlist_management"
+        "value": "postgresql://alex@localhost:5432/playlist_management?schema=public"
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           String     @id @default(uuid())\n  email        String     @unique\n  passwordHash String\n  name         String?\n  role         Role       @default(USER)\n  createdAt    DateTime   @default(now())\n  updatedAt    DateTime   @updatedAt\n  playlists    Playlist[] // User can own multiple playlists\n  logs         Log[] // User's activity logs\n\n  @@index([email])\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n\n// Action types for logging\nenum ActionType {\n  CREATE\n  READ\n  UPDATE\n  DELETE\n}\n\n// Target entity types for logging\nenum EntityType {\n  PLAYLIST\n  SONG\n  USER\n}\n\nmodel Log {\n  id         String     @id @default(uuid())\n  timestamp  DateTime   @default(now())\n  userId     String? // Who performed the action (nullable)\n  user       User?      @relation(fields: [userId], references: [id])\n  actionType ActionType // What action was performed\n  entityType EntityType // What type of entity was affected\n  entityId   String // ID of the affected entity\n  details    String? // Additional details about the action (optional)\n\n  @@index([userId])\n  @@index([timestamp])\n  @@index([actionType])\n  @@index([entityType])\n  @@index([entityId])\n}\n\nmodel Playlist {\n  id          String   @id\n  name        String\n  description String\n  coverImage  String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @default(now()) @updatedAt\n  songCount   Int      @default(0)\n  userId      String?\n  user        User?    @relation(fields: [userId], references: [id])\n  songs       Song[]   @relation(\"PlaylistToSong\")\n\n  // Add indexes for search and sort operations\n  @@index([name])\n  @@index([description])\n  @@index([updatedAt])\n  @@index([songCount])\n  @@index([name, updatedAt])\n  @@index([userId])\n  // Add full-text search indexes\n  @@fulltext([name, description])\n}\n\nmodel Song {\n  id         String   @id\n  title      String\n  artist     String\n  album      String?\n  duration   Int?     @default(0)\n  playlistId String\n  playlist   Playlist @relation(\"PlaylistToSong\", fields: [playlistId], references: [id], onDelete: Cascade)\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @default(now()) @updatedAt\n\n  // The existing index\n  @@index([playlistId], map: \"Song_playlistId_fkey\")\n  // Add indexes for song filtering and sorting\n  @@index([title])\n  @@index([artist])\n}\n",
-  "inlineSchemaHash": "bbe9248db05fe32a7d42dfd8a0bd364e81bec5f07ed26fe725ed0994fab7c03e",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           String     @id @default(uuid())\n  email        String     @unique\n  passwordHash String\n  name         String?\n  role         Role       @default(USER)\n  createdAt    DateTime   @default(now())\n  updatedAt    DateTime   @updatedAt\n  playlists    Playlist[] // User can own multiple playlists\n  logs         Log[] // User's activity logs\n\n  @@index([email])\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n\n// Action types for logging\nenum ActionType {\n  CREATE\n  READ\n  UPDATE\n  DELETE\n}\n\n// Target entity types for logging\nenum EntityType {\n  PLAYLIST\n  SONG\n  USER\n}\n\nmodel Log {\n  id         String     @id @default(uuid())\n  timestamp  DateTime   @default(now())\n  userId     String? // Who performed the action (nullable)\n  user       User?      @relation(fields: [userId], references: [id])\n  actionType ActionType // What action was performed\n  entityType EntityType // What type of entity was affected\n  entityId   String // ID of the affected entity\n  details    String? // Additional details about the action (optional)\n\n  @@index([userId])\n  @@index([timestamp])\n  @@index([actionType])\n  @@index([entityType])\n  @@index([entityId])\n}\n\nmodel Playlist {\n  id          String   @id\n  name        String\n  description String\n  coverImage  String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @default(now()) @updatedAt\n  songCount   Int      @default(0)\n  userId      String?\n  user        User?    @relation(fields: [userId], references: [id])\n  songs       Song[]   @relation(\"PlaylistToSong\")\n  // PostgreSQL doesn't support Prisma's fulltext index - removing\n\n  // Add indexes for search and sort operations\n  @@index([name])\n  @@index([description])\n  @@index([updatedAt])\n  @@index([songCount])\n  @@index([name, updatedAt])\n  @@index([userId])\n}\n\nmodel Song {\n  id         String   @id\n  title      String\n  artist     String\n  album      String?\n  duration   Int?     @default(0)\n  playlistId String\n  playlist   Playlist @relation(\"PlaylistToSong\", fields: [playlistId], references: [id], onDelete: Cascade)\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @default(now()) @updatedAt\n\n  // Updated index with unique map name\n  @@index([playlistId], map: \"Song_playlist_relation_idx\")\n  // Add indexes for song filtering and sorting\n  @@index([title])\n  @@index([artist])\n}\n",
+  "inlineSchemaHash": "37d67eba1a657189fad9e09486299ce5bb6ea6037e419d1d2a8ee8807d9dfecc",
   "copyEngine": true
 }
 config.dirname = '/'

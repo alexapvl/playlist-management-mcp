@@ -167,39 +167,14 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
-};
-
-exports.Prisma.UserOrderByRelevanceFieldEnum = {
-  id: 'id',
-  email: 'email',
-  passwordHash: 'passwordHash',
-  name: 'name'
-};
-
-exports.Prisma.LogOrderByRelevanceFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  entityId: 'entityId',
-  details: 'details'
-};
-
-exports.Prisma.PlaylistOrderByRelevanceFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  coverImage: 'coverImage',
-  userId: 'userId'
-};
-
-exports.Prisma.SongOrderByRelevanceFieldEnum = {
-  id: 'id',
-  title: 'title',
-  artist: 'artist',
-  album: 'album',
-  playlistId: 'playlistId'
 };
 exports.Role = exports.$Enums.Role = {
   USER: 'USER',
