@@ -69,7 +69,7 @@ async function getDangerousUsers() {
     { timestamp: Date; userId: string; user: any }[]
   > = {};
 
-  logs.forEach((log) => {
+  logs.forEach((log: any) => {
     if (log.userId) {
       if (!userLogs[log.userId]) {
         userLogs[log.userId] = [];
