@@ -6,7 +6,20 @@ import {
   getLogsCount,
 } from "@/lib/logger";
 import { getCurrentUser } from "@/lib/auth";
-import { EntityType, ActionType } from "@prisma/client";
+
+// Define enums locally - these should match the Prisma schema
+enum ActionType {
+  CREATE = "CREATE",
+  READ = "READ",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+}
+
+enum EntityType {
+  PLAYLIST = "PLAYLIST",
+  SONG = "SONG",
+  USER = "USER",
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,8 +45,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "100", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
     const userId = searchParams.get("userId") || undefined;
-    const entityType = searchParams.get("entityType") as EntityType | null;
-    const actionType = searchParams.get("actionType") as ActionType | null;
+    const entityType = searchParams.get("entityType") as any | null;
+    const actionType = searchParams.get("actionType") as any | null;
     const entityId = searchParams.get("entityId") || undefined;
     const countOnly = searchParams.get("countOnly") === "true";
     const sortField = searchParams.get("sortField") || "timestamp";
