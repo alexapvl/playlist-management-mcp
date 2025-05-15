@@ -1,6 +1,6 @@
 import prisma from "./prisma";
 import { logUserAction } from "./logger";
-import { ActionType, EntityType } from "@prisma/client";
+import { ActionType, EntityType } from "./constants";
 
 /**
  * Creates a new playlist and logs the action

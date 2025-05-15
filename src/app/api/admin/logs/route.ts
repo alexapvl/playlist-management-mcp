@@ -6,20 +6,7 @@ import {
   getLogsCount,
 } from "@/lib/logger";
 import { getCurrentUser } from "@/lib/auth";
-
-// Define enums locally - these should match the Prisma schema
-enum ActionType {
-  CREATE = "CREATE",
-  READ = "READ",
-  UPDATE = "UPDATE",
-  DELETE = "DELETE",
-}
-
-enum EntityType {
-  PLAYLIST = "PLAYLIST",
-  SONG = "SONG",
-  USER = "USER",
-}
+import { ActionType, EntityType } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {

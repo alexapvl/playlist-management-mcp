@@ -1,5 +1,29 @@
 import prisma from "./prisma";
-import { ActionType, EntityType, Prisma } from "@prisma/client";
+import { ActionType, EntityType } from "./constants";
+
+// Define types locally to avoid Prisma client type issues
+interface LogData {
+  actionType: ActionType;
+  entityType: EntityType;
+  entityId: string;
+  details?: string;
+  userId?: string;
+}
+
+interface LogWhereInput {
+  entityType?: EntityType;
+  actionType?: ActionType;
+  userId?: string;
+  [key: string]: any;
+}
+
+interface LogOrderByInput {
+  timestamp?: "asc" | "desc";
+  actionType?: "asc" | "desc";
+  entityType?: "asc" | "desc";
+  userId?: "asc" | "desc";
+  [key: string]: any;
+}
 
 /**
  * Creates a log entry for user actions
@@ -19,7 +43,7 @@ export async function logUserAction({
 }) {
   try {
     // Create the data object with conditional userId
-    const logData: Omit<Prisma.LogCreateInput, "user"> & { userId?: string } = {
+    const logData: LogData = {
       actionType,
       entityType,
       entityId,
@@ -32,7 +56,7 @@ export async function logUserAction({
     }
 
     await prisma.log.create({
-      data: logData as Prisma.LogCreateInput,
+      data: logData,
     });
   } catch (error) {
     console.error("Error logging user action:", error);
@@ -73,7 +97,7 @@ export async function getAllLogs(
 ) {
   try {
     // Build where clause based on filters
-    const where: Prisma.LogWhereInput = {};
+    const where: LogWhereInput = {};
 
     if (entityType) {
       where.entityType = entityType;
@@ -84,7 +108,7 @@ export async function getAllLogs(
     }
 
     // Build orderBy object based on sort field and direction
-    const orderBy: Prisma.LogOrderByWithRelationInput = {};
+    const orderBy: LogOrderByInput = {};
 
     // Handle different sort fields
     switch (sortField) {
@@ -156,7 +180,7 @@ export async function getLogsCount(
 ) {
   try {
     // Build where clause based on filters
-    const where: Prisma.LogWhereInput = {};
+    const where: LogWhereInput = {};
 
     if (entityType) {
       where.entityType = entityType;

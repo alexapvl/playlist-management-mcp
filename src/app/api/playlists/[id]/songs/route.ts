@@ -4,7 +4,7 @@ import { songSchema } from "@/lib/validation";
 import { v4 as uuidv4 } from "uuid";
 import prisma from "@/lib/prisma";
 import { logUserAction } from "@/lib/logger";
-import { ActionType, EntityType } from "@prisma/client";
+import { ActionType, EntityType } from "@/lib/constants";
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -40,7 +40,7 @@ export async function GET(
     }
 
     // Transform to expected format
-    const songs: Song[] = playlist.songs.map((s) => ({
+    const songs: Song[] = playlist.songs.map((s: any) => ({
       id: s.id,
       title: s.title,
       artist: s.artist,

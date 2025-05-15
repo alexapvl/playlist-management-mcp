@@ -5,7 +5,7 @@ import { filterAndSortPlaylists } from "@/lib/playlist-store";
 import { playlistSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
 import { logUserAction } from "@/lib/logger";
-import { ActionType, EntityType } from "@prisma/client";
+import { ActionType, EntityType } from "@/lib/constants";
 
 // Add timeout for request handling
 const TIMEOUT_MS = 10000;
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform Prisma model to match the expected Playlist interface
-    const playlists: Playlist[] = prismaPlaylists.map((p) => ({
+    const playlists: Playlist[] = prismaPlaylists.map((p: any) => ({
       id: p.id,
       name: p.name,
       description: p.description,

@@ -3,7 +3,7 @@ import { Playlist } from "@/types";
 import { playlistUpdateSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
 import { logUserAction } from "@/lib/logger";
-import { ActionType, EntityType } from "@prisma/client";
+import { ActionType, EntityType } from "@/lib/constants";
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -157,7 +157,7 @@ export async function PATCH(
 
       // Find songs that exist in the playlist but not in the request
       const songsToDelete = existingPlaylist.songs.filter(
-        (song) => !requestSongIds.has(song.id)
+        (song: { id: string }) => !requestSongIds.has(song.id)
       );
 
       // Delete songs that are no longer in the playlist
