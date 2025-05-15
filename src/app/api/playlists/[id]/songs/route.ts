@@ -20,10 +20,11 @@ export async function OPTIONS() {
 // Get all songs from a playlist
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const playlistId = params.id;
+    const { id } = await params;
+    const playlistId = id;
 
     // Check if playlist exists
     const playlist = await prisma.playlist.findUnique({
@@ -76,10 +77,11 @@ export async function GET(
 // Add a song to a playlist
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const playlistId = params.id;
+    const { id } = await params;
+    const playlistId = id;
 
     // Check if playlist exists
     const playlist = await prisma.playlist.findUnique({

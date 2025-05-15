@@ -18,10 +18,11 @@ export async function OPTIONS() {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const playlistId = params.id;
+    const { id } = await params;
+    const playlistId = id;
 
     const playlist = await prisma.playlist.findUnique({
       where: { id: playlistId },
@@ -80,10 +81,11 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const playlistId = params.id;
+    const { id } = await params;
+    const playlistId = id;
     console.log("Playlist ID:", playlistId);
 
     // Check if playlist exists
@@ -304,10 +306,11 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const playlistId = params.id;
+    const { id } = await params;
+    const playlistId = id;
 
     // Additional authentication check at API level
     const token = request.cookies.get("auth_token")?.value;

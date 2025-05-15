@@ -1,5 +1,5 @@
 import prisma from "./prisma";
-import { ActionType, EntityType } from "@/generated/prisma";
+import { ActionType, EntityType, Prisma } from "@/generated/prisma";
 
 /**
  * Creates a log entry for user actions
@@ -19,7 +19,7 @@ export async function logUserAction({
 }) {
   try {
     // Create the data object with conditional userId
-    const logData: any = {
+    const logData: Omit<Prisma.LogCreateInput, "user"> & { userId?: string } = {
       actionType,
       entityType,
       entityId,
@@ -32,7 +32,7 @@ export async function logUserAction({
     }
 
     await prisma.log.create({
-      data: logData,
+      data: logData as Prisma.LogCreateInput,
     });
   } catch (error) {
     console.error("Error logging user action:", error);
@@ -73,7 +73,7 @@ export async function getAllLogs(
 ) {
   try {
     // Build where clause based on filters
-    const where: any = {};
+    const where: Prisma.LogWhereInput = {};
 
     if (entityType) {
       where.entityType = entityType;
@@ -84,7 +84,7 @@ export async function getAllLogs(
     }
 
     // Build orderBy object based on sort field and direction
-    const orderBy: any = {};
+    const orderBy: Prisma.LogOrderByWithRelationInput = {};
 
     // Handle different sort fields
     switch (sortField) {
@@ -156,7 +156,7 @@ export async function getLogsCount(
 ) {
   try {
     // Build where clause based on filters
-    const where: any = {};
+    const where: Prisma.LogWhereInput = {};
 
     if (entityType) {
       where.entityType = entityType;

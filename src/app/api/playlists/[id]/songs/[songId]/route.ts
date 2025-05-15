@@ -6,10 +6,10 @@ import { logUserAction } from "@/lib/logger";
 import { ActionType, EntityType } from "@/generated/prisma";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
     songId: string;
-  };
+  }>;
 }
 
 export async function OPTIONS() {
@@ -26,7 +26,7 @@ export async function OPTIONS() {
 // Get a specific song
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id: playlistId, songId } = params;
+    const { id: playlistId, songId } = await params;
 
     // Check if playlist exists
     const playlist = await prisma.playlist.findUnique({
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // Update a song
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id: playlistId, songId } = params;
+    const { id: playlistId, songId } = await params;
 
     // Check if playlist exists
     const playlist = await prisma.playlist.findUnique({
@@ -217,7 +217,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 // Delete a song
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id: playlistId, songId } = params;
+    const { id: playlistId, songId } = await params;
 
     // Check if playlist exists
     const playlist = await prisma.playlist.findUnique({

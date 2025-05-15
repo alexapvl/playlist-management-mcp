@@ -2,7 +2,7 @@ import { User } from "../generated/prisma";
 import prisma from "./prisma";
 import crypto from "crypto";
 import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 // Hash password using crypto
 export function hashPassword(password: string): string {
