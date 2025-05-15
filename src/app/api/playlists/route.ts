@@ -5,7 +5,7 @@ import { filterAndSortPlaylists } from "@/lib/playlist-store";
 import { playlistSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
 import { logUserAction } from "@/lib/logger";
-import { ActionType, EntityType } from "@/generated/prisma";
+import { ActionType, EntityType } from "@prisma/client";
 
 // Add timeout for request handling
 const TIMEOUT_MS = 10000;

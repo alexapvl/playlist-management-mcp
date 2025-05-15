@@ -6,7 +6,7 @@ import {
   getLogsCount,
 } from "@/lib/logger";
 import { getCurrentUser } from "@/lib/auth";
-import { EntityType, ActionType } from "@/generated/prisma";
+import { EntityType, ActionType } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {

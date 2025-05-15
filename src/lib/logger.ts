@@ -1,5 +1,5 @@
 import prisma from "./prisma";
-import { ActionType, EntityType, Prisma } from "@/generated/prisma";
+import { ActionType, EntityType, Prisma } from "@prisma/client";
 
 /**
  * Creates a log entry for user actions

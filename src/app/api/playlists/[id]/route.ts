@@ -3,7 +3,7 @@ import { Playlist } from "@/types";
 import { playlistUpdateSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
 import { logUserAction } from "@/lib/logger";
-import { ActionType, EntityType } from "@/generated/prisma";
+import { ActionType, EntityType } from "@prisma/client";
 
 export async function OPTIONS() {
   return new NextResponse(null, {

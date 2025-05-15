@@ -1,4 +1,4 @@
-import { User } from "../generated/prisma";
+import { User } from "@prisma/client";
 import prisma from "./prisma";
 import crypto from "crypto";
 import { cookies } from "next/headers";

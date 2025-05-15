@@ -3,7 +3,7 @@ import { songUpdateSchema } from "@/lib/validation";
 import prisma from "@/lib/prisma";
 import { Song } from "@/types";
 import { logUserAction } from "@/lib/logger";
-import { ActionType, EntityType } from "@/generated/prisma";
+import { ActionType, EntityType } from "@prisma/client";
 
 interface RouteParams {
   params: Promise<{

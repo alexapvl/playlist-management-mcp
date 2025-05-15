@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@/generated/prisma";
+import { User } from "@prisma/client";
 import {
   createContext,
   useContext,
